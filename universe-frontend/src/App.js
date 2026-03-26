@@ -4,8 +4,13 @@ import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute, ModeratorRoute } from './components/layout/ProtectedRoutes';
 
 import AuthPage from './pages/AuthPage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import ProfilePage from './pages/ProfilePage';
 import FeedPage from './pages/FeedPage';
 import ModDashboard from './pages/ModDashboard';
+import MessagesPage from './pages/MessagesPage';
+import EventsPage from './pages/EventsPage';
 
 function App() {
   return (
@@ -14,6 +19,8 @@ function App() {
         <Routes>
           {/* Public Route */}
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
           {/* Protected Student Routes */}
           <Route 
@@ -21,6 +28,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <FeedPage />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             } 
           />
@@ -40,9 +56,7 @@ function App() {
             path="/messages" 
             element={
               <ProtectedRoute>
-                <div className="flex items-center justify-center min-h-screen text-2xl text-[var(--neon-pink)] animate-pulse font-bold">
-                  Subspace Comms Repairing...
-                </div>
+                <MessagesPage />
               </ProtectedRoute>
             } 
           />
@@ -57,7 +71,14 @@ function App() {
             } 
           />
 
-          {/* Fallback */}
+          <Route 
+            path="/events" 
+            element={
+              <ProtectedRoute>
+                <EventsPage />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>

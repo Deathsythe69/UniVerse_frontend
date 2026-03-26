@@ -1,14 +1,17 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Rocket, ShieldPlus, ArrowRight } from 'lucide-react';
+import { auth } from '../firebase';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, register } = useContext(AuthContext);
+  
+  const { login, register, googleLogin } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleToggle = () => {
@@ -18,6 +21,25 @@ const AuthPage = () => {
   };
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      setLoading(true);
+      const res = await googleLogin(user.displayName, user.email, user.uid);
+      if (res.success) {
+        navigate('/');
+      } else {
+        setError(res.message);
+      }
+      setLoading(false);
+    } catch (err) {
+      setError(err.message || 'Google Sign-In failed');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +67,6 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen flex text-white relative flex-col md:flex-row">
-      {/* Decorative Galaxy Side */}
       <div className="hidden md:flex flex-1 flex-col justify-center items-center p-12 relative z-10 border-r border-[var(--glass-border)]">
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--space-dark)] to-transparent opacity-80 z-0"></div>
         <div className="z-10 text-center space-y-6 max-w-lg">
@@ -61,7 +82,6 @@ const AuthPage = () => {
         </div>
       </div>
 
-      {/* Form Side */}
       <div className="flex-1 flex flex-col justify-center items-center p-6 relative z-10">
         <div className="w-full max-w-md glass-card p-10 space-y-8">
           
@@ -88,7 +108,7 @@ const AuthPage = () => {
                   className="input-glass"
                   value={formData.name}
                   onChange={handleChange}
-                  required={!isLogin}
+                  required
                 />
               </div>
             )}
@@ -116,7 +136,7 @@ const AuthPage = () => {
             </div>
 
             {error && (
-              <div className={`p-3 rounded-lg border text-sm text-center ${error.includes('successful') ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-red-500/50 bg-red-500/10 text-red-400'}`}>
+               <div className={`p-3 rounded-lg border text-sm text-center ${error.toLowerCase().includes('success') ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-red-500/50 bg-red-500/10 text-red-400'}`}>
                 {error}
               </div>
             )}
@@ -131,7 +151,32 @@ const AuthPage = () => {
             </button>
           </form>
 
-          <div className="text-center">
+          {isLogin && (
+            <div className="flex justify-center -mt-2">
+              <Link to="/forgot-password" className="text-sm text-gray-400 hover:text-white transition-colors underline decoration-dashed.">
+                Forgot Password?
+              </Link>
+            </div>
+          )}
+
+          <div className="space-y-4 pt-2">
+            <div className="relative flex items-center">
+              <div className="flex-grow border-t border-[var(--glass-border)]"></div>
+              <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">Or</span>
+              <div className="flex-grow border-t border-[var(--glass-border)]"></div>
+            </div>
+            <button 
+              type="button"
+              onClick={handleGoogleLogin} 
+              disabled={loading}
+              className="w-full py-3 flex items-center justify-center gap-3 bg-white text-gray-900 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-[0_4px_14px_0_rgba(255,255,255,0.2)]"
+            >
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5"/>
+              Sign in with Google
+            </button>
+          </div>
+
+          <div className="text-center pt-2">
             <button onClick={handleToggle} className="text-sm text-gray-400 hover:text-white transition-colors underline decoration-dashed underline-offset-4">
               {isLogin ? "Don't have an account? Create one." : "Already have a clearance? Login here."}
             </button>

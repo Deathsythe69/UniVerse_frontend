@@ -46,14 +46,19 @@ const Sidebar = () => {
           <span className="text-lg">Main Feed</span>
         </NavLink>
         
+        <NavLink to="/profile" className={navLinkClass}>
+          <UserIcon className="w-6 h-6" />
+          <span className="text-lg">Profile</span>
+        </NavLink>
+        
         <NavLink to="/events" className={navLinkClass}>
           <Calendar className="w-6 h-6" />
-          <span className="text-lg disabled">Events (Soon)</span>
+          <span className="text-lg">Events</span>
         </NavLink>
 
         <NavLink to="/messages" className={navLinkClass}>
           <MessageSquare className="w-6 h-6" />
-          <span className="text-lg">Messages (Soon)</span>
+          <span className="text-lg">Messages</span>
         </NavLink>
 
         {(user?.role === 'moderator' || user?.role === 'supervisor') && (

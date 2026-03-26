@@ -47,13 +47,52 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async (name, email, googleId) => {
+    try {
+      const res = await api.post('/auth/google', { name, email, googleId });
+      localStorage.setItem('universe_token', res.data.token);
+      const decoded = jwtDecode(res.data.token);
+      setUser(decoded);
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'Google Login failed' };
+    }
+  };
+
+  const verifyOtp = async (email, otp) => {
+    try {
+      await api.post('/auth/verify-otp', { email, otp });
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'OTP Verification failed' };
+    }
+  };
+
+  const forgotPassword = async (email) => {
+    try {
+      await api.post('/auth/forgot-password', { email });
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'Request failed' };
+    }
+  };
+
+  const resetPassword = async (token, password) => {
+    try {
+      await api.put(`/auth/reset-password/${token}`, { password });
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'Reset failed' };
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('universe_token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, googleLogin, verifyOtp, forgotPassword, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );
