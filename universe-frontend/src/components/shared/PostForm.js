@@ -24,7 +24,7 @@ const PostForm = ({ onPostSuccess }) => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
-      setMessage('Post submitted successfully! Approaching moderation orbit...');
+      setMessage('Post submitted successfully!');
       setContent('');
       setImage(null);
       if (onPostSuccess) onPostSuccess();
