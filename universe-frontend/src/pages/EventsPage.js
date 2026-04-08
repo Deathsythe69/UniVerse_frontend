@@ -4,8 +4,32 @@ import { AuthContext } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import { Calendar, MapPin, Building, Plus } from 'lucide-react';
 import moment from 'moment';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const BASE_URL = 'http://localhost:5000';
+
+const mockEventsData = [
+  { _id: 'mock1', title: 'Holi Festival', description: 'Google Calendar (Hindu Holidays) - Festival of Colors', type: 'holiday', date: '2026-03-03T00:00:00.000Z', organizer: 'Google Calendar' },
+  { _id: 'mock2', title: 'Odd Semester Final Exam Notice', description: 'Official notice regarding the upcoming final examination schedule for BTech 3rd, 5th, and 7th Sems.', type: 'academic', date: '2026-05-15T09:00:00.000Z', organizer: 'BPUT' },
+  { _id: 'mock3', title: 'Diwali', description: 'Google Calendar (Hindu Holidays) - Festival of Lights', type: 'holiday', date: '2026-11-08T00:00:00.000Z', organizer: 'Google Calendar' },
+  { _id: 'mock4', title: 'Registration for Even Semester', description: 'Late registration dates announced for the upcoming even semester.', type: 'academic', date: '2026-04-20T10:00:00.000Z', organizer: 'BPUT' },
+  { _id: 'mock5', title: 'Dussehra', description: 'Google Calendar (Hindu Holidays) - Victory of Good over Evil', type: 'holiday', date: '2026-10-18T00:00:00.000Z', organizer: 'Google Calendar' }
+];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+};
 
 const EventsPage = () => {
   const { user } = useContext(AuthContext);
@@ -24,9 +48,11 @@ const EventsPage = () => {
   const fetchEvents = async () => {
     try {
       const res = await api.get('/events');
-      setEvents(res.data);
+      const combined = [...res.data, ...mockEventsData].sort((a,b) => new Date(a.date) - new Date(b.date));
+      setEvents(combined);
     } catch (err) {
       console.error(err);
+      setEvents(mockEventsData);
     }
   };
 
@@ -66,27 +92,38 @@ const EventsPage = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
+      <motion.div 
+        variants={containerVariants} 
+        initial="hidden" 
+        animate="show" 
+        className="grid grid-cols-1 gap-6"
+      >
         {events.length === 0 ? (
-          <div className="glass-card p-10 text-center text-gray-500 font-bold text-xl">No upcoming events found.</div>
+          <motion.div variants={itemVariants} className="glass-card backdrop-blur-xl bg-white/5 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-10 text-center text-gray-500 font-bold text-xl rounded-2xl">No upcoming events found.</motion.div>
         ) : (
           events.map(event => (
-            <div key={event._id} className="glass-card p-6 flex flex-col md:flex-row gap-6 hover:-translate-y-1 transition-transform group">
+            <motion.div 
+              variants={itemVariants} 
+              key={event._id} 
+              whileHover={{ y: -5, scale: 1.01 }}
+              className="glass-card backdrop-blur-xl bg-black/40 border border-white/10 hover:border-white/20 shadow-[0_4px_24px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_rgba(0,255,65,0.15)] p-6 flex flex-col md:flex-row gap-6 transition-all duration-300 group rounded-2xl relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               <div className="md:w-1/3 h-48 rounded-xl overflow-hidden bg-white/5 flex-shrink-0 relative border border-[var(--glass-border)] group-hover:border-[var(--neon-cyan)] transition-colors">
                 {event.image ? (
                   <img src={`${BASE_URL}${event.image}`} alt={event.title} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[var(--neon-purple)]">
+                  <div className="w-full h-full flex items-center justify-center text-[var(--neon-purple)] group-hover:scale-110 transition-transform duration-500">
                     <Calendar className="w-16 h-16 opacity-50" />
                   </div>
                 )}
-                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[var(--neon-pink)] uppercase tracking-wider border border-[var(--neon-pink)]/30">
+                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[var(--neon-cyan)] uppercase tracking-wider border border-[var(--neon-cyan)]/30 shadow-[0_0_10px_rgba(0,255,65,0.3)]">
                   {event.type}
                 </div>
               </div>
               
-              <div className="flex-1 flex flex-col">
-                <h3 className="text-2xl font-bold text-white mb-2">{event.title}</h3>
+              <div className="flex-1 flex flex-col z-10">
+                <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-[var(--neon-cyan)] transition-colors">{event.title}</h3>
                 <p className="text-gray-300 mb-4 line-clamp-2 leading-relaxed">{event.description}</p>
                 
                 <div className="mt-auto space-y-2">
@@ -95,21 +132,27 @@ const EventsPage = () => {
                     <span className="font-medium">{moment(event.date).format('MMMM Do YYYY, h:mm a')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400 text-sm">
-                    <MapPin className="w-4 h-4 text-[var(--neon-pink)]" />
-                    <span>{event.location}</span>
+                    {event.location ? (
+                      <>
+                        <MapPin className="w-4 h-4 text-[var(--neon-pink)]" />
+                        <span>{event.location}</span>
+                      </>
+                    ) : (
+                      <span className="text-gray-500 italic text-xs">No location specified</span>
+                    )}
                   </div>
                   {event.organizer && (
                     <div className="flex items-center gap-2 text-gray-400 text-sm">
                       <Building className="w-4 h-4 text-[var(--neon-purple)]" />
-                      <span>{event.organizer}</span>
+                      <span className="text-white/80 font-medium">{event.organizer}</span>
                     </div>
                   )}
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))
         )}
-      </div>
+      </motion.div>
 
       {isCreating && (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/80 p-4 overflow-y-auto">

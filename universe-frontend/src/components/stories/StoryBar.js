@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, X } from 'lucide-react';
 import api from '../../api/axiosConfig';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const StoryBar = () => {
   const [groupedStories, setGroupedStories] = useState([]);
@@ -124,9 +125,23 @@ const StoryBar = () => {
       </div>
 
       {/* Viewing Modal Slideshow */}
+      <AnimatePresence>
       {selectedGroup && selectedGroup.stories[currentIndex] && (
-         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4" onClick={() => setSelectedGroup(null)}>
-           <div className="w-full max-w-md h-[85vh] rounded-3xl bg-black border border-white/20 shadow-[0_0_50px_rgba(255,0,255,0.3)] relative flex flex-col items-center justify-center overflow-hidden animate-[slide-up_0.3s_ease-out]" onClick={e => e.stopPropagation()}>
+         <motion.div 
+           initial={{ opacity: 0 }} 
+           animate={{ opacity: 1 }} 
+           exit={{ opacity: 0 }} 
+           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4" 
+           onClick={() => setSelectedGroup(null)}
+         >
+           <motion.div 
+             initial={{ scale: 0.8, y: 50 }} 
+             animate={{ scale: 1, y: 0 }} 
+             exit={{ scale: 0.8, y: 50 }} 
+             transition={{ type: "spring", bounce: 0.4 }}
+             className="w-full max-w-md h-[85vh] rounded-3xl bg-black border border-white/20 shadow-[0_0_50px_rgba(255,0,255,0.3)] relative flex flex-col items-center justify-center overflow-hidden" 
+             onClick={e => e.stopPropagation()}
+           >
              <img src={`${BASE_URL}${selectedGroup.stories[currentIndex].image}`} alt="story" className="absolute inset-0 w-full h-full object-contain z-0" />
              
              {/* Invisible navigation areas */}
@@ -159,9 +174,10 @@ const StoryBar = () => {
                  </div>
                ))}
              </div>
-           </div>
-         </div>
+           </motion.div>
+         </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Creating Modal (unchanged) */}
       {isCreating && (

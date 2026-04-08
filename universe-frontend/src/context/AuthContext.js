@@ -34,7 +34,11 @@ export const AuthProvider = ({ children }) => {
       setUser(decoded);
       return { success: true };
     } catch (err) {
-      return { success: false, message: err.response?.data?.message || 'Login failed' };
+      return { 
+        success: false, 
+        message: err.response?.data?.message || 'Login failed',
+        isVerified: err.response?.data?.isVerified
+      };
     }
   };
 

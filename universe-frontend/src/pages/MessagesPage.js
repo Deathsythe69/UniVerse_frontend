@@ -15,6 +15,7 @@ const MessagesPage = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [arrivalMessage, setArrivalMessage] = useState(null);
+  const [activeTab, setActiveTab] = useState('primary'); // 'primary' or 'requests'
   const socket = useRef();
   const scrollRef = useRef();
 
@@ -22,19 +23,35 @@ const MessagesPage = () => {
     socket.current = io(BASE_URL);
     socket.current.on('getMessage', (data) => {
       setArrivalMessage({
+        _id: data._id,
         sender: data.sender,
         text: data.text,
+        status: data.status,
         createdAt: data.createdAt,
         conversationId: data.conversationId
       });
+    });
+
+    socket.current.on('messageStatusUpdate', ({ messageId, status }) => {
+      setMessages((prev) => prev.map(m => m._id === messageId ? { ...m, status } : m));
     });
   }, []);
 
   useEffect(() => {
     if (arrivalMessage && currentChat?._id === arrivalMessage.conversationId) {
       setMessages((prev) => [...prev, arrivalMessage]);
+      // Mark as seen automatically if we have the chat open
+      if (arrivalMessage.sender !== user.id) {
+         api.put('/messages/seen/' + arrivalMessage.conversationId);
+         socket.current.emit("updateMessageStatus", { 
+           senderId: arrivalMessage.sender, 
+           receiverId: user.id, 
+           messageId: arrivalMessage._id, 
+           status: "seen" 
+         });
+      }
     }
-  }, [arrivalMessage, currentChat]);
+  }, [arrivalMessage, currentChat, user.id]);
 
   useEffect(() => {
     socket.current.emit('addUser', user?.id);
@@ -59,6 +76,12 @@ const MessagesPage = () => {
       try {
         const res = await api.get('/messages/' + currentChat._id);
         setMessages(res.data);
+        
+        // When opening the chat, ping backend to mark all unseen as seen
+        const hasUnseen = res.data.some(m => m.sender !== user.id && m.status !== 'seen');
+        if (hasUnseen) {
+          await api.put('/messages/seen/' + currentChat._id);
+        }
       } catch (err) {
         console.error(err);
       }
@@ -76,18 +99,20 @@ const MessagesPage = () => {
 
     const receiverId = currentChat.members.find((member) => member._id !== user.id)._id;
 
-    socket.current.emit('sendMessage', {
-      senderId: user.id,
-      receiverId,
-      text: newMessage,
-      conversationId: currentChat._id
-    });
-
     try {
       const res = await api.post('/messages', {
         conversationId: currentChat._id,
         text: newMessage,
         receiverId
+      });
+
+      // Emit through socket with saved ID
+      socket.current.emit('sendMessage', {
+        senderId: user.id,
+        receiverId,
+        text: newMessage,
+        conversationId: currentChat._id,
+        messageId: res.data._id
       });
       setMessages([...messages, res.data]);
       setNewMessage('');
@@ -114,19 +139,53 @@ const MessagesPage = () => {
     }
   };
 
+  const handleBlockUser = async () => {
+    try {
+      const friendId = currentChat.members.find(m => m._id !== user.id)._id;
+      await api.put(`/users/block/${friendId}`);
+      alert("User has been blocked. They can no longer send you messages.");
+      setCurrentChat(null);
+      fetchConversations();
+    } catch (err) {
+      alert("Failed to block user.");
+    }
+  };
+
+  const filteredConvos = conversations.filter(c => {
+    // If you started it, it's never a request for you.
+    const isSender = c.members[0]._id === user.id;
+    if (activeTab === 'requests') {
+       return c.isRequest && !isSender;
+    }
+    return !c.isRequest || isSender;
+  });
+
   return (
     <MainLayout>
       <div className="flex h-[calc(100vh-100px)] glass-card overflow-hidden">
         {/* Left pane: Conversations */}
         <div className="w-1/3 border-r border-[var(--glass-border)] flex flex-col">
-          <div className="p-4 border-b border-[var(--glass-border)] font-bold text-lg text-white">
-            Comms Channels
+          <div className="p-4 border-b border-[var(--glass-border)] flex justify-between items-center bg-black/20">
+            <button 
+               onClick={() => setActiveTab('primary')} 
+               className={`flex-1 text-center font-bold pb-2 transition-all ${activeTab === 'primary' ? 'text-white border-b-2 border-[var(--neon-cyan)]' : 'text-gray-500'}`}
+            >
+              Messages
+            </button>
+            <button 
+               onClick={() => setActiveTab('requests')} 
+               className={`flex-1 text-center font-bold pb-2 transition-all relative ${activeTab === 'requests' ? 'text-white border-b-2 border-[var(--neon-pink)]' : 'text-gray-500'}`}
+            >
+              Requests
+            </button>
           </div>
           <div className="overflow-y-auto flex-1">
-            {conversations.length === 0 ? (
-                <div className="p-4 text-center text-sm text-gray-500">No channels yet. Use Search to connect.</div>
+            {filteredConvos.length === 0 ? (
+                <div className="p-4 text-center text-sm text-gray-500">
+                  {activeTab === 'requests' ? "No pending message requests." : "No messages yet. Use Search to connect."}
+                </div>
             ) : null}
-            {conversations.map((c) => {
+            {filteredConvos.map((c) => {
               const friend = c.members.find((m) => m._id !== user?.id);
               return (
                 <div 
@@ -139,7 +198,7 @@ const MessagesPage = () => {
                   </div>
                   <div className="flex-1 overflow-hidden">
                     <p className="font-bold text-white truncate text-sm">{friend?.name}</p>
-                    <p className="text-xs text-gray-400 truncate">{c.isRequest ? <span className="text-[var(--neon-pink)]">Message Request pending...</span> : c.lastMessage?.text || "Started conversation"}</p>
+                    <p className="text-xs text-gray-400 truncate">{c.isRequest && activeTab === 'requests' ? <span className="text-[var(--neon-pink)] font-bold">Wants to message you</span> : c.lastMessage?.text || "Started conversation"}</p>
                   </div>
                 </div>
               );
@@ -152,13 +211,16 @@ const MessagesPage = () => {
           {currentChat ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-[var(--glass-border)] font-bold text-lg text-white flex items-center justify-between">
+              <div className="p-4 border-b border-[var(--glass-border)] font-bold text-lg text-white flex items-center justify-between bg-black/40">
                 <div className="flex items-center gap-3">
                   <span className="font-bold">{currentChat.members.find(m => m._id !== user.id)?.name}</span>
                 </div>
-                {currentChat.isRequest && (
-                  <span className="text-xs px-3 py-1 bg-[var(--neon-pink)]/20 border border-[var(--neon-pink)] text-[var(--neon-pink)] rounded-full">Request</span>
-                )}
+                <div className="flex items-center gap-2">
+                  <button onClick={handleBlockUser} className="text-xs px-3 py-1 bg-red-500/20 border border-red-500 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition-colors">Block</button>
+                  {currentChat.isRequest && (
+                    <span className="text-xs px-3 py-1 bg-[var(--neon-pink)]/20 border border-[var(--neon-pink)] text-[var(--neon-pink)] rounded-full">Request</span>
+                  )}
+                </div>
               </div>
 
               {/* Chat Messages */}
@@ -171,9 +233,16 @@ const MessagesPage = () => {
                 ) : (
                   messages.map((m, idx) => (
                     <div key={idx} ref={scrollRef} className={`flex ${m.sender === user.id ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[70%] p-3 rounded-2xl ${m.sender === user.id ? 'bg-[var(--neon-purple)] text-white rounded-br-none' : 'bg-white/10 text-gray-200 rounded-bl-none'}`}>
+                      <div className={`max-w-[70%] p-3 rounded-2xl ${m.sender === user.id ? 'bg-[var(--neon-purple)] text-white rounded-br-none shadow-[0_0_15px_rgba(155,81,224,0.3)]' : 'bg-white/10 text-gray-200 rounded-bl-none border border-[var(--glass-border)]'}`}>
                         <p>{m.text}</p>
-                        <p className="text-[10px] text-white/50 text-right mt-1">{moment(m.createdAt).format('LT')}</p>
+                        <div className="flex justify-end items-center gap-1 mt-1">
+                          <p className="text-[10px] text-white/50">{moment(m.createdAt).format('LT')}</p>
+                          {m.sender === user.id && (
+                             <span className="text-[10px] ml-1 font-bold">
+                               {m.status === 'seen' ? '🔵' : (m.status === 'delivered' ? '✓✓' : '✓')}
+                             </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))
@@ -197,7 +266,7 @@ const MessagesPage = () => {
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-gray-500 font-bold text-lg">
-              Open a channel to start transmitting.
+              Open a direct message to start chatting.
             </div>
           )}
         </div>

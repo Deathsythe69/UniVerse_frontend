@@ -1,7 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import { ProtectedRoute, ModeratorRoute } from './components/layout/ProtectedRoutes';
+import { ProtectedRoute, ModeratorRoute, AdminRoute } from './components/layout/ProtectedRoutes';
+import UniverseBackground from './components/shared/UniverseBackground';
 
 import AuthPage from './pages/AuthPage';
 import ForgotPassword from './pages/ForgotPassword';
@@ -9,12 +10,15 @@ import ResetPassword from './pages/ResetPassword';
 import ProfilePage from './pages/ProfilePage';
 import FeedPage from './pages/FeedPage';
 import ModDashboard from './pages/ModDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import MessagesPage from './pages/MessagesPage';
 import EventsPage from './pages/EventsPage';
+import UserProfile from './pages/UserProfile';
 
 function App() {
   return (
     <AuthProvider>
+      <UniverseBackground />
       <Router>
         <Routes>
           {/* Public Route */}
@@ -40,18 +44,16 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          
+
           <Route 
-            path="/events" 
+            path="/user/:id" 
             element={
               <ProtectedRoute>
-                <div className="flex items-center justify-center min-h-screen text-2xl text-[var(--neon-cyan)] animate-pulse font-bold">
-                  Events Module Cooldown...
-                </div>
+                <UserProfile />
               </ProtectedRoute>
             } 
           />
-
+          
           <Route 
             path="/messages" 
             element={
@@ -68,6 +70,16 @@ function App() {
               <ModeratorRoute>
                 <ModDashboard />
               </ModeratorRoute>
+            } 
+          />
+
+          {/* Admin Routes */}
+          <Route 
+            path="/admin" 
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
             } 
           />
 

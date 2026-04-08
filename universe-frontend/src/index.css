@@ -7,21 +7,18 @@
     --space-void: #0a0a0f;
     --space-dark: #12101a;
     --space-violet: #1a1025;
-    --neon-cyan: #00f0ff;
-    --neon-pink: #ff00ff;
-    --neon-purple: #b537f2;
+    /* Softened, premium nebula colors */
+    --neon-cyan: #40C4FF;    /* Ice Blue */
+    --neon-pink: #FF8A65;    /* Cosmic Coral */
+    --neon-purple: #9B51E0;  /* Void Purple */
     --glass-bg: rgba(26, 16, 37, 0.4);
     --glass-border: rgba(255, 255, 255, 0.1);
   }
 
   body {
-    @apply bg-[var(--space-void)] text-gray-100 antialiased min-h-screen font-sans;
+    @apply bg-transparent text-gray-100 antialiased min-h-screen;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
     margin: 0;
-    /* Basic starry background gradient overlay */
-    background-image: 
-      radial-gradient(circle at 15% 50%, rgba(181, 55, 242, 0.05), transparent 25%),
-      radial-gradient(circle at 85% 30%, rgba(0, 240, 255, 0.05), transparent 25%);
-    background-attachment: fixed;
   }
 }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Search, Trophy, MessageCircle, UserPlus, Eye, X } from 'lucide-react';
+import { Search, MessageCircle, UserPlus, Eye, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
 import { AuthContext } from '../../context/AuthContext';
@@ -10,7 +10,7 @@ const BASE_URL = 'http://localhost:5000';
 const RightSidebar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState({ users: [], posts: [] });
-  const [leaderboard, setLeaderboard] = useState([]);
+
   const [searching, setSearching] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
@@ -31,33 +31,27 @@ const RightSidebar = () => {
     setLoadingPost(false);
   };
 
-  useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        const res = await api.get('/posts/leaderboard');
-        setLeaderboard(res.data);
-      } catch (err) {
-        console.error('Failed to fetch leaderboard:', err);
-      }
-    };
-    fetchLeaderboard();
-  }, []);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return setSearchResults({ users: [], posts: [] });
-    
+
+  const handleTagSearch = async (query) => {
+    if (!query.trim()) return setSearchResults({ users: [], posts: [] });
     setSearching(true);
+    setSearchQuery(query);
     try {
       const [usersRes, postsRes] = await Promise.all([
-        api.get(`/users/search?q=${searchQuery}`),
-        api.get(`/posts/search?q=${searchQuery}`)
+        api.get(`/users/search?q=${query}`),
+        api.get(`/posts/search?q=${query}`)
       ]);
       setSearchResults({ users: usersRes.data, posts: postsRes.data });
     } catch (err) {
       console.error(err);
     }
     setSearching(false);
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    handleTagSearch(searchQuery);
   };
 
   return (
@@ -67,12 +61,21 @@ const RightSidebar = () => {
         <form onSubmit={handleSearch} className="relative">
           <input 
             type="text" 
-            placeholder="Search students, roles..." 
-            className="input-glass !py-2 w-full text-sm placeholder-gray-500"
+            placeholder="Search tags, students..." 
+            className="input-glass !py-2 w-full pr-16 text-sm placeholder-gray-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button type="submit" className="absolute right-2 top-2 text-gray-400 hover:text-[var(--neon-cyan)]">
+          {searchQuery && (
+            <button 
+              type="button" 
+              onClick={() => { setSearchQuery(''); setSearchResults({ users: [], posts: [] }); }} 
+              className="absolute right-8 top-2.5 text-gray-400 hover:text-red-400"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+          <button type="submit" className="absolute right-2 top-2.5 text-gray-400 hover:text-[var(--neon-cyan)]">
             <Search className="w-4 h-4" />
           </button>
         </form>
@@ -139,45 +142,25 @@ const RightSidebar = () => {
           </div>
         ) : searchQuery && !searching ? (
           <div className="mt-4 text-center text-sm text-gray-500">No signals found.</div>
-        ) : null}
-      </div>
-
-      <div className="glass-card p-4">
-        <h3 className="font-bold text-white mb-4 flex items-center gap-2"><Trophy className="w-4 h-4 text-[var(--neon-pink)]"/> Weekly Top Stars</h3>
-        {leaderboard.length > 0 ? (
-          <div className="space-y-4">
-            {leaderboard.map((item, idx) => (
-              <div key={item.user._id} className="flex items-center gap-3">
-                <div className={`text-lg font-black ${idx === 0 ? 'text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.6)]' : idx === 1 ? 'text-gray-300 drop-shadow-[0_0_5px_rgba(209,213,219,0.4)]' : idx === 2 ? 'text-amber-600 drop-shadow-[0_0_5px_rgba(217,119,6,0.4)]' : 'text-gray-500'} w-4 text-center`}>
-                  {idx + 1}
-                </div>
-                <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
-                  {item.user.avatar ? <img src={`${BASE_URL}${item.user.avatar}`} alt="av" className="w-full h-full object-cover" /> : item.user.name.charAt(0)}
-                </div>
-                <div className="flex-1 overflow-hidden">
-                  <p className="text-sm font-bold text-white truncate">{item.user.name}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {item.bestPostId && (
-                    <button 
-                      onClick={() => handleViewPost(item.bestPostId)}
-                      className="text-gray-400 hover:text-[var(--neon-cyan)] transition-colors p-1"
-                      title="View Post"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                  )}
-                  <div className="text-xs font-bold text-[var(--neon-pink)] bg-[var(--neon-pink)]/10 px-2 py-1 rounded-full shadow-[0_0_5px_rgba(255,0,255,0.2)]">
-                    {item.highestLikes} ♥
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         ) : (
-          <div className="text-center text-sm text-gray-500 py-4">No top stars this week.</div>
+          <div className="mt-4">
+            <h4 className="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wide">Trending Tags</h4>
+            <div className="flex flex-wrap gap-2">
+              {['#Exams', '#BPUT', '#TechFest', '#CampusLife', '#Hackathon'].map((tag) => (
+                <button 
+                  key={tag}
+                  onClick={() => handleTagSearch(tag)}
+                  className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/20 hover:border-[var(--neon-cyan)] hover:shadow-[0_0_10px_rgba(0,240,255,0.3)] transition-all font-bold cursor-pointer"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
       </div>
+
+
 
       {isPostModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">

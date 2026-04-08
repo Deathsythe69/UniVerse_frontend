@@ -7,17 +7,21 @@ import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [showOtp, setShowOtp] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { login, register, googleLogin } = useContext(AuthContext);
+  const { login, register, googleLogin, verifyOtp } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleToggle = () => {
     setIsLogin(!isLogin);
     setError('');
-    setFormData({ name: '', email: '', password: '' });
+    setShowOtp(false);
+    setOtp('');
+    setFormData({ name: '', email: '', password: '', confirmPassword: '' });
   };
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -44,20 +48,41 @@ const AuthPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    // Check confirm password match
+    if (!isLogin && !showOtp) {
+      if (formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+    }
+    
     setLoading(true);
 
-    if (isLogin) {
+    if (showOtp) {
+      const res = await verifyOtp(formData.email, otp);
+      if (res.success) {
+        setShowOtp(false);
+        setIsLogin(true);
+        setError('Verification successful! You can now login.');
+      } else {
+        setError(res.message);
+      }
+    } else if (isLogin) {
       const res = await login(formData.email, formData.password);
       if (res.success) {
         navigate('/');
       } else {
         setError(res.message);
+        if (res.isVerified === false) {
+          setShowOtp(true);
+        }
       }
     } else {
       const res = await register(formData.name, formData.email, formData.password);
       if (res.success) {
-        setIsLogin(true); // Switch to login view on success
-        setError('Registration successful! Please login.');
+        setShowOtp(true);
+        setError('Registration successful! Please check your email for the OTP.');
       } else {
         setError(res.message);
       }
@@ -99,41 +124,72 @@ const AuthPage = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {!isLogin && (
+            {showOtp ? (
               <div>
+                <p className="text-gray-300 text-sm mb-4 text-center">Enter the OTP sent to {formData.email}</p>
                 <input
                   type="text"
-                  name="name"
-                  placeholder="Full Name"
-                  className="input-glass"
-                  value={formData.name}
-                  onChange={handleChange}
+                  name="otp"
+                  placeholder="6-Digit OTP"
+                  className="input-glass text-center tracking-[0.5em] font-bold text-xl"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  maxLength={6}
                   required
                 />
               </div>
+            ) : (
+              <>
+                {!isLogin && (
+                  <div>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Full Name"
+                      className="input-glass"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                )}
+                <div>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="University Email (@gmail.com)"
+                    className="input-glass"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Password (min 6 chars)"
+                    className="input-glass"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                {!isLogin && (
+                  <div>
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      placeholder="Confirm Password"
+                      className="input-glass"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                )}
+              </>
             )}
-            <div>
-              <input
-                type="email"
-                name="email"
-                placeholder="University Email (@gmail.com)"
-                className="input-glass"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <input
-                type="password"
-                name="password"
-                placeholder="Password (min 6 chars)"
-                className="input-glass"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
 
             {error && (
                <div className={`p-3 rounded-lg border text-sm text-center ${error.toLowerCase().includes('success') ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-red-500/50 bg-red-500/10 text-red-400'}`}>
@@ -146,7 +202,7 @@ const AuthPage = () => {
               disabled={loading}
               className="w-full py-4 text-lg btn-neon btn-neon-primary flex justify-center items-center gap-2"
             >
-              {loading ? 'Processing...' : (isLogin ? 'Launch' : 'Register')}
+              {loading ? 'Processing...' : (showOtp ? 'Verify OTP' : (isLogin ? 'Launch' : 'Register'))}
               {!loading && <ArrowRight className="w-5 h-5" />}
             </button>
           </form>

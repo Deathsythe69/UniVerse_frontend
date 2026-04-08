@@ -21,3 +21,15 @@ export const ModeratorRoute = ({ children }) => {
 
   return children;
 };
+
+export const AdminRoute = ({ children }) => {
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading Data Core...</div>;
+
+  if (!user || user.role !== 'admin') {
+    return <Navigate to="/" />;
+  }
+
+  return children;
+};

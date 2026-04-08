@@ -1,11 +1,12 @@
 import React, { useContext } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { 
-  Home, 
-  ShieldAlert, 
-  LogOut, 
-  Rocket, 
+import { Link } from 'react-router-dom';
+import {
+  Home,
+  ShieldAlert,
+  LogOut,
+  Star,
   User as UserIcon,
   MessageSquare,
   Calendar
@@ -21,23 +22,25 @@ const Sidebar = () => {
   };
 
   const navLinkClass = ({ isActive }) =>
-    `flex items-center gap-4 px-6 py-4 rounded-xl transition-all duration-300 font-medium ${
-      isActive 
-        ? 'bg-white/10 text-[var(--neon-cyan)] shadow-[inset_4px_0_0_var(--neon-cyan)]' 
-        : 'text-gray-400 hover:text-white hover:bg-white/5'
+    `flex items-center gap-4 px-6 py-4 rounded-xl transition-all duration-300 font-medium ${isActive
+      ? 'bg-white/10 text-[var(--neon-cyan)] shadow-[inset_4px_0_0_var(--neon-cyan)]'
+      : 'text-gray-400 hover:text-white hover:bg-white/5'
     }`;
 
   return (
     <div className="w-80 h-screen sticky top-0 border-r border-white/10 hidden md:flex flex-col flex-shrink-0 bg-[var(--space-dark)]/50 backdrop-blur-md">
       {/* Logo Area */}
-      <div className="p-8 flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full border border-[var(--neon-cyan)] flex items-center justify-center bg-[var(--neon-cyan)]/10 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
-          <Rocket className="w-6 h-6 text-[var(--neon-cyan)]" />
+      <Link to="/">
+        <div className="p-8 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full border border-[var(--neon-cyan)] flex items-center justify-center bg-[var(--neon-cyan)]/10 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+            <img src="/cropped_circle_image.png" alt="Logo" className="w-full h-full object-cover" />
+          </div>
+          <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)] tracking-wider">
+            UniVerse
+          </h1>
+
         </div>
-        <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)] tracking-wider">
-          UniVerse
-        </h1>
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 px-4 space-y-2 mt-4">
@@ -45,12 +48,12 @@ const Sidebar = () => {
           <Home className="w-6 h-6" />
           <span className="text-lg">Main Feed</span>
         </NavLink>
-        
-        <NavLink to="/profile" className={navLinkClass}>
+
+        <NavLink to={user?.id ? `/user/${user.id}` : "/profile"} className={navLinkClass}>
           <UserIcon className="w-6 h-6" />
           <span className="text-lg">Profile</span>
         </NavLink>
-        
+
         <NavLink to="/events" className={navLinkClass}>
           <Calendar className="w-6 h-6" />
           <span className="text-lg">Events</span>
@@ -81,7 +84,7 @@ const Sidebar = () => {
           </div>
         </div>
 
-        <button 
+        <button
           onClick={handleLogout}
           className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-white/10 text-gray-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 transition-all font-medium"
         >
@@ -89,7 +92,7 @@ const Sidebar = () => {
           Log Out
         </button>
       </div>
-    </div>
+    </div >
   );
 };
 
