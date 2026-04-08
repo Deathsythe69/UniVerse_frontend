@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Trophy, MessageCircle, UserPlus } from 'lucide-react';
+import React, { useState, useEffect, useContext } from 'react';
+import { Search, Trophy, MessageCircle, UserPlus, Eye, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
+import { AuthContext } from '../../context/AuthContext';
+import PostCard from '../shared/PostCard';
 
 const BASE_URL = 'http://localhost:5000';
 
@@ -10,7 +12,24 @@ const RightSidebar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [loadingPost, setLoadingPost] = useState(false);
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+
+  const handleViewPost = async (postId) => {
+    if (!postId) return;
+    setIsPostModalOpen(true);
+    setLoadingPost(true);
+    try {
+      const res = await api.get(`/posts/${postId}`);
+      setSelectedPost(res.data);
+    } catch (err) {
+      console.error('Failed to fetch post:', err);
+    }
+    setLoadingPost(false);
+  };
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -105,8 +124,19 @@ const RightSidebar = () => {
                 <div className="flex-1 overflow-hidden">
                   <p className="text-sm font-bold text-white truncate">{item.user.name}</p>
                 </div>
-                <div className="text-xs font-bold text-[var(--neon-pink)] bg-[var(--neon-pink)]/10 px-2 py-1 rounded-full shadow-[0_0_5px_rgba(255,0,255,0.2)]">
-                  {item.totalLikes} ♥
+                <div className="flex items-center gap-2">
+                  {item.bestPostId && (
+                    <button 
+                      onClick={() => handleViewPost(item.bestPostId)}
+                      className="text-gray-400 hover:text-[var(--neon-cyan)] transition-colors p-1"
+                      title="View Post"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                  )}
+                  <div className="text-xs font-bold text-[var(--neon-pink)] bg-[var(--neon-pink)]/10 px-2 py-1 rounded-full shadow-[0_0_5px_rgba(255,0,255,0.2)]">
+                    {item.highestLikes} ♥
+                  </div>
                 </div>
               </div>
             ))}
@@ -115,6 +145,29 @@ const RightSidebar = () => {
           <div className="text-center text-sm text-gray-500 py-4">No top stars this week.</div>
         )}
       </div>
+
+      {isPostModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto glass-card p-6">
+            <button 
+              onClick={() => { setIsPostModalOpen(false); setSelectedPost(null); }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <h2 className="text-2xl font-bold text-white mb-6">Top Post</h2>
+            {loadingPost ? (
+              <div className="flex justify-center py-10">
+                <div className="w-8 h-8 border-4 border-[var(--neon-cyan)] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : selectedPost ? (
+              <PostCard post={selectedPost} currentUserId={user?.id} />
+            ) : (
+              <div className="text-center text-gray-400 py-10">Post not found.</div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
