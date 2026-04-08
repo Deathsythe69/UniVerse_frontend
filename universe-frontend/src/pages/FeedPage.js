@@ -16,8 +16,8 @@ const FeedPage = () => {
     setLoading(true);
     try {
       const res = await api.get('/posts');
-      // Reverse to show newest first
-      setPosts(res.data.reverse());
+      // Backend already sorts by newest first
+      setPosts(res.data);
     } catch (err) {
       console.error("Failed to fetch feed", err);
     }

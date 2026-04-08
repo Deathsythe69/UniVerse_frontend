@@ -9,7 +9,7 @@ const BASE_URL = 'http://localhost:5000';
 
 const RightSidebar = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState({ users: [], posts: [] });
   const [leaderboard, setLeaderboard] = useState([]);
   const [searching, setSearching] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -45,12 +45,15 @@ const RightSidebar = () => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return setSearchResults([]);
+    if (!searchQuery.trim()) return setSearchResults({ users: [], posts: [] });
     
     setSearching(true);
     try {
-      const res = await api.get(`/users/search?q=${searchQuery}`);
-      setSearchResults(res.data);
+      const [usersRes, postsRes] = await Promise.all([
+        api.get(`/users/search?q=${searchQuery}`),
+        api.get(`/posts/search?q=${searchQuery}`)
+      ]);
+      setSearchResults({ users: usersRes.data, posts: postsRes.data });
     } catch (err) {
       console.error(err);
     }
@@ -76,33 +79,63 @@ const RightSidebar = () => {
         
         {searching ? (
           <div className="mt-4 text-center text-sm text-[var(--neon-pink)] animate-pulse">Scanning...</div>
-        ) : searchResults.length > 0 ? (
-          <div className="mt-4 space-y-3">
-            {searchResults.map(u => (
-              <div key={u._id} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg transition-colors border border-transparent hover:border-[var(--glass-border)] group">
-                <div className="w-8 h-8 rounded-full bg-[var(--neon-purple)] flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
-                  {u.avatar ? <img src={`${BASE_URL}${u.avatar}`} alt="av" className="w-full h-full object-cover" /> : u.name.charAt(0)}
-                </div>
-                <div className="overflow-hidden flex-1">
-                  <p className="text-sm font-bold text-white truncate">{u.name}</p>
-                  <p className="text-xs text-[var(--neon-cyan)] capitalize">{u.role}</p>
-                </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={async () => {
-                     await api.post('/messages/conversation', { receiverId: u._id });
-                     navigate('/messages');
-                  }} className="text-gray-400 hover:text-[var(--neon-cyan)] p-1 transition-colors" title="Start Comms">
-                    <MessageCircle className="w-4 h-4"/>
-                  </button>
-                  <button onClick={async () => { 
-                     const res = await api.put('/users/follow/'+u._id); 
-                     alert(res.data.isFollowing ? 'Followed user' : 'Unfollowed user');
-                  }} className="text-gray-400 hover:text-[var(--neon-pink)] p-1 transition-colors" title="Follow/Unfollow">
-                    <UserPlus className="w-4 h-4"/>
-                  </button>
+        ) : (searchResults.users.length > 0 || searchResults.posts.length > 0) ? (
+          <div className="mt-4 space-y-4">
+            
+            {searchResults.users.length > 0 && (
+              <div>
+                <h4 className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Users</h4>
+                <div className="space-y-2">
+                  {searchResults.users.map(u => (
+                    <div key={u._id} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg transition-colors border border-transparent hover:border-[var(--glass-border)] group">
+                      <div className="w-8 h-8 rounded-full bg-[var(--neon-purple)] flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
+                        {u.avatar ? <img src={`${BASE_URL}${u.avatar}`} alt="av" className="w-full h-full object-cover" /> : u.name.charAt(0)}
+                      </div>
+                      <div className="overflow-hidden flex-1">
+                        <p className="text-sm font-bold text-white truncate">{u.name}</p>
+                        <p className="text-xs text-[var(--neon-cyan)] capitalize">{u.role}</p>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={async () => {
+                           await api.post('/messages/conversation', { receiverId: u._id });
+                           navigate('/messages');
+                        }} className="text-gray-400 hover:text-[var(--neon-cyan)] p-1 transition-colors" title="Start Comms">
+                          <MessageCircle className="w-4 h-4"/>
+                        </button>
+                        <button onClick={async () => { 
+                           const res = await api.put('/users/follow/'+u._id); 
+                           alert(res.data.isFollowing ? 'Followed user' : 'Unfollowed user');
+                        }} className="text-gray-400 hover:text-[var(--neon-pink)] p-1 transition-colors" title="Follow/Unfollow">
+                          <UserPlus className="w-4 h-4"/>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
+
+            {searchResults.posts.length > 0 && (
+              <div>
+                <h4 className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Posts</h4>
+                <div className="space-y-2">
+                  {searchResults.posts.map(p => (
+                    <div key={p._id} onClick={() => handleViewPost(p._id)} className="p-2 bg-white/5 rounded-lg border border-[var(--glass-border)] cursor-pointer hover:border-[var(--neon-cyan)] transition-colors group relative overflow-hidden">
+                      <div className="flex items-center gap-2 mb-1 relative z-10">
+                        <div className="w-5 h-5 rounded-full bg-[var(--neon-purple)] flex items-center justify-center text-[10px] text-white font-bold overflow-hidden flex-shrink-0">
+                          {p.user?.avatar ? <img src={`${BASE_URL}${p.user.avatar}`} alt="av" className="w-full h-full object-cover" /> : p.user?.name.charAt(0)}
+                        </div>
+                        <span className="text-xs font-bold text-gray-300 truncate">{p.user?.name}</span>
+                      </div>
+                      <p className="text-sm text-white line-clamp-2 relative z-10">{p.content}</p>
+                      {/* background hover effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-[var(--neon-cyan)]/0 to-[var(--neon-cyan)]/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
           </div>
         ) : searchQuery && !searching ? (
           <div className="mt-4 text-center text-sm text-gray-500">No signals found.</div>
