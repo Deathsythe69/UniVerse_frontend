@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import { Calendar, MapPin, Building, Plus } from 'lucide-react';
 import moment from 'moment';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const BASE_URL = 'http://localhost:5000';
 

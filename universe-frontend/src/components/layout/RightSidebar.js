@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Search, MessageCircle, UserPlus, Eye, X } from 'lucide-react';
+import React, { useState, useContext } from 'react';
+import { Search, MessageCircle, UserPlus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
 import { AuthContext } from '../../context/AuthContext';

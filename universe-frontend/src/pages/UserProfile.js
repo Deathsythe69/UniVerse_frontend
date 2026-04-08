@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import MainLayout from '../components/layout/MainLayout';
 import api from '../api/axiosConfig';
@@ -9,7 +9,6 @@ const BASE_URL = 'http://localhost:5000';
 
 const UserProfile = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { user: currentUser } = useContext(AuthContext);
   const [profileUser, setProfileUser] = useState(null);
   const [posts, setPosts] = useState([]);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Heart, MessageCircle, Flag, Send, Share2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';

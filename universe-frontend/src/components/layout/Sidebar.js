@@ -1,12 +1,10 @@
 import React, { useContext } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { Link } from 'react-router-dom';
 import {
   Home,
   ShieldAlert,
   LogOut,
-  Star,
   User as UserIcon,
   MessageSquare,
   Calendar
@@ -92,7 +90,7 @@ const Sidebar = () => {
           Log Out
         </button>
       </div>
-    </div >
+    </div>
   );
 };
 
