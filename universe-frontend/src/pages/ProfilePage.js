@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', bio: '' });
   const [avatarFile, setAvatarFile] = useState(null);
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState('');
@@ -56,6 +58,7 @@ const ProfilePage = () => {
       if (res.data.user.avatar) {
         setCurrentAvatarUrl(res.data.user.avatar.startsWith('http') ? res.data.user.avatar : `${BASE_URL}${res.data.user.avatar}`);
       }
+      setTimeout(() => navigate('/'), 1000);
     } catch (err) {
       setError(err.response?.data?.message || 'Update failed');
     }
@@ -66,6 +69,11 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen flex text-white relative flex-col justify-center items-center">
+      <div className="absolute top-6 left-6 z-20">
+        <button onClick={() => navigate('/')} className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-[var(--glass-border)] rounded-xl transition-colors font-bold">
+          ← Back to Feed
+        </button>
+      </div>
       <div className="w-full max-w-lg glass-card p-10 space-y-8 z-10">
         <h2 className="text-3xl font-bold text-center neon-text-cyan">Edit Profile</h2>
         

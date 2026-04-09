@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import MainLayout from '../components/layout/MainLayout';
 import api from '../api/axiosConfig';
@@ -9,24 +9,46 @@ const BASE_URL = 'http://localhost:5000';
 
 const UserProfile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user: currentUser } = useContext(AuthContext);
   const [profileUser, setProfileUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await api.get(`/users/${id}`); // Assuming backend route users/:id
-        setProfileUser(res.data.user);
-        setPosts(res.data.posts);
-      } catch (err) {
-        console.error("Failed to load user profile");
-      }
-      setLoading(false);
-    };
     fetchUser();
   }, [id]);
+
+  const fetchUser = async () => {
+    try {
+      const res = await api.get(`/users/${id}`); // Assuming backend route users/:id
+      setProfileUser(res.data.user);
+      setPosts(res.data.posts);
+    } catch (err) {
+      console.error("Failed to load user profile");
+    }
+    setLoading(false);
+  };
+
+  const handleFollow = async () => {
+    if (!currentUser) return;
+    try {
+      await api.put(`/users/follow/${profileUser._id}`);
+      fetchUser();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMessage = async () => {
+    if (!currentUser) return;
+    try {
+      await api.post('/messages/conversation', { receiverId: profileUser._id });
+      navigate('/messages');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Cannot start conversation');
+    }
+  };
 
   if (loading) {
     return (
@@ -64,10 +86,27 @@ const UserProfile = () => {
           <p className="text-[var(--neon-cyan)] text-sm mt-1 uppercase tracking-wider">{profileUser.role}</p>
           <p className="text-gray-300 mt-4 max-w-md">{profileUser.bio || "No bio available."}</p>
           
-          {currentUser?.id === profileUser._id && (
+          {currentUser?.id === profileUser._id ? (
             <Link to="/profile" className="mt-6 px-6 py-2 rounded-xl bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-colors font-bold text-sm">
               Edit Profile
             </Link>
+          ) : (
+            <div className="mt-6 flex flex-wrap justify-center gap-4">
+              <button 
+                onClick={handleFollow} 
+                className={`px-6 py-2 rounded-xl font-bold text-sm transition-colors ${profileUser?.followers?.includes(currentUser?.id) ? 'bg-gray-600 hover:bg-red-500/80 text-white' : 'btn-neon btn-neon-primary text-black'}`}
+              >
+                {profileUser?.followers?.includes(currentUser?.id) ? 'Unfollow' : 'Follow'}
+              </button>
+              {profileUser?.followers?.includes(currentUser?.id) && profileUser?.following?.includes(currentUser?.id) && (
+                <button 
+                  onClick={handleMessage} 
+                  className="px-6 py-2 rounded-xl bg-[var(--neon-purple)] text-white font-bold text-sm hover:opacity-80 transition-opacity"
+                >
+                  Message
+                </button>
+              )}
+            </div>
           )}
         </div>
 
