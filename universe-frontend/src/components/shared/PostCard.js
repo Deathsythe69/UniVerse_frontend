@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Flag, Send, Share2, X } from 'lucide-react';
+import { Heart, MessageCircle, Flag, Send, Share2, X, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import api from '../../api/axiosConfig';
@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 
 const BASE_URL = 'http://localhost:5000';
 
-const PostCard = ({ post, currentUserId, onLikeUpdate }) => {
+const PostCard = ({ post, currentUserId, onLikeUpdate, onDelete }) => {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [localPost, setLocalPost] = useState(post);
@@ -77,6 +77,17 @@ const PostCard = ({ post, currentUserId, onLikeUpdate }) => {
     setReporting(false);
   };
   
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    try {
+      await api.delete(`/posts/${localPost._id}`);
+      if (onDelete) onDelete(localPost._id);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to delete post');
+    }
+  };
+  
   const fetchConversationsForShare = async () => {
     try {
       const res = await api.get('/messages/conversations');
@@ -141,14 +152,25 @@ const PostCard = ({ post, currentUserId, onLikeUpdate }) => {
             <p className="text-xs text-gray-400">{moment(localPost.createdAt).fromNow()}</p>
           </div>
         </div>
-        <button 
-          onClick={handleReport}
-          disabled={reporting}
-          className="text-gray-500 hover:text-red-400 transition-colors" 
-          title="Report Post"
-        >
-          <Flag className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-3">
+          {localPost.user?._id === currentUserId && (
+            <button 
+              onClick={handleDelete}
+              className="text-gray-500 hover:text-red-500 transition-colors" 
+              title="Delete Post"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          )}
+          <button 
+            onClick={handleReport}
+            disabled={reporting}
+            className="text-gray-500 hover:text-red-400 transition-colors" 
+            title="Report Post"
+          >
+            <Flag className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {renderContent(localPost)}

@@ -68,6 +68,7 @@ const FeedPage = () => {
                    key={post._id} 
                    post={post} 
                    currentUserId={user?.id}
+                   onDelete={(postId) => setPosts(posts.filter(p => p._id !== postId))}
                  />
               ))}
             </div>

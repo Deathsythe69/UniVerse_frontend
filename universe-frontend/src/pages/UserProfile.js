@@ -116,7 +116,7 @@ const UserProfile = () => {
           {posts.length === 0 ? (
             <div className="text-center text-gray-500 py-10">No transmissions yet.</div>
           ) : (
-            posts.map(post => <PostCard key={post._id} post={post} />)
+            posts.map(post => <PostCard key={post._id} post={post} currentUserId={currentUser?.id} onDelete={(postId) => setPosts(posts.filter(p => p._id !== postId))} />)
           )}
         </div>
         
