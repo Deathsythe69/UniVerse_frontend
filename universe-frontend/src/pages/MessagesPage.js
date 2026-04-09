@@ -86,7 +86,7 @@ const MessagesPage = () => {
       }
     };
     getMessages();
-  }, [currentChat]);
+  }, [currentChat, user?.id]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
