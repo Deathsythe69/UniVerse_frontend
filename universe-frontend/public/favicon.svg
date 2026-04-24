@@ -1,30 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f0c29" />
-      <stop offset="50%" stop-color="#302b63" />
-      <stop offset="100%" stop-color="#24243e" />
-    </linearGradient>
-    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#8E2DE2" />
-      <stop offset="100%" stop-color="#4A00E0" />
+    <radialGradient id="ring" cx="50%" cy="50%" r="50%">
+      <stop offset="70%" stop-color="#C180FF"/>
+      <stop offset="100%" stop-color="#3DC2FD"/>
+    </radialGradient>
+    <linearGradient id="core" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6E84"/>
+      <stop offset="100%" stop-color="#3DC2FD"/>
     </linearGradient>
   </defs>
   
-  <rect width="512" height="512" rx="120" fill="url(#bg)" />
-  
-  <!-- Planet / Core -->
-  <circle cx="256" cy="256" r="100" fill="white" opacity="0.95" />
-  
-  <!-- Orbit Ring -->
-  <ellipse cx="256" cy="256" rx="180" ry="60" fill="none" stroke="url(#ring)" stroke-width="24" transform="rotate(-20 256 256)" />
-  
-  <!-- Letter U cutout -->
-  <text x="50%" y="54%" font-family="Arial, sans-serif" font-weight="bold" font-size="120" fill="url(#bg)" text-anchor="middle" dominant-baseline="middle">U</text>
-  
-  <!-- Small stars -->
-  <circle cx="120" cy="120" r="8" fill="white" />
-  <circle cx="400" cy="150" r="12" fill="white" opacity="0.8" />
-  <circle cx="380" cy="400" r="6" fill="white" opacity="0.6" />
-  <circle cx="150" cy="380" r="10" fill="white" opacity="0.9" />
+  <rect width="512" height="512" rx="120" fill="#ffffff" />
+  <ellipse cx="256" cy="256" rx="200" ry="60" transform="rotate(-30 256 256)" fill="none" stroke="url(#ring)" stroke-width="32" stroke-linecap="round" stroke-dasharray="2 12" />
+  <ellipse cx="256" cy="256" rx="200" ry="60" transform="rotate(-30 256 256)" fill="none" stroke="url(#ring)" stroke-width="12" opacity="0.6"/>
+  <circle cx="256" cy="256" r="90" fill="url(#core)" />
+  <circle cx="206" cy="206" r="16" fill="#ffffff" opacity="0.8" />
+  <circle cx="360" cy="140" r="24" fill="#FFD700" />
+  <circle cx="120" cy="380" r="16" fill="#00FF41" />
 </svg>

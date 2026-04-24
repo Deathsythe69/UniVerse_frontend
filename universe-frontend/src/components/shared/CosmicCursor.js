@@ -94,8 +94,8 @@ const CosmicCursor = () => {
       let prevY = posRef.current.y;
       for (let i = 0; i < trails.length; i++) {
         const trail = trails[i];
-        trail.x += (prevX - trail.x) * (0.25 - i * 0.03);
-        trail.y += (prevY - trail.y) * (0.25 - i * 0.03);
+        trail.x += (prevX - trail.x) * (0.25 - i * 0.02);
+        trail.y += (prevY - trail.y) * (0.25 - i * 0.02);
         trail.el.style.left = trail.x + 'px';
         trail.el.style.top = trail.y + 'px';
         prevX = trail.x;

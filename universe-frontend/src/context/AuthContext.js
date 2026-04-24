@@ -29,10 +29,15 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const res = await api.post('/auth/login', { email, password });
+      
+      if (res.data.otpRequired) {
+        return { success: true, otpRequired: true };
+      }
+
       localStorage.setItem('universe_token', res.data.token);
       const decoded = jwtDecode(res.data.token);
       setUser(decoded);
-      return { success: true };
+      return { success: true, otpRequired: false };
     } catch (err) {
       return { 
         success: false, 
@@ -72,6 +77,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const verifyLoginOtp = async (email, otp) => {
+    try {
+      const res = await api.post('/auth/verify-login-otp', { email, otp });
+      localStorage.setItem('universe_token', res.data.token);
+      const decoded = jwtDecode(res.data.token);
+      setUser(decoded);
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'Login OTP Verification failed' };
+    }
+  };
+
   const forgotPassword = async (email) => {
     try {
       await api.post('/auth/forgot-password', { email });
@@ -96,7 +113,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, googleLogin, verifyOtp, forgotPassword, resetPassword }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, googleLogin, verifyOtp, verifyLoginOtp, forgotPassword, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );
