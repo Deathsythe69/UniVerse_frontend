@@ -2,53 +2,344 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
 @layer base {
   :root {
-    --space-void: #0a0a0f;
-    --space-dark: #12101a;
-    --space-violet: #1a1025;
-    /* Softened, premium nebula colors */
-    --neon-cyan: #40C4FF;    /* Ice Blue */
-    --neon-pink: #FF8A65;    /* Cosmic Coral */
-    --neon-purple: #9B51E0;  /* Void Purple */
-    --glass-bg: rgba(26, 16, 37, 0.4);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    /* === Celestial Canvas Design System (from Stitch) === */
+    
+    /* Surface Hierarchy — "Atmospheric Strata" */
+    --space-void: #0e0e13;
+    --surface: #0e0e13;
+    --surface-dim: #0e0e13;
+    --surface-container-lowest: #000000;
+    --surface-container-low: #131319;
+    --surface-container: #19191f;
+    --surface-container-high: #1f1f26;
+    --surface-container-highest: #25252d;
+    --surface-variant: #25252d;
+    --surface-bright: #2c2b33;
+
+    /* Primary — Ice Blue */
+    --primary: #3dc2fd;
+    --primary-container: #0aace6;
+    --primary-dim: #24b4ee;
+    --on-primary: #00394f;
+
+    /* Secondary — Void Purple */
+    --secondary: #c180ff;
+    --secondary-container: #670fac;
+    --secondary-dim: #c180ff;
+    --on-secondary: #33005a;
+
+    /* Tertiary — Cosmic Coral */
+    --tertiary: #ff9c7e;
+    --tertiary-container: #fd8863;
+    --tertiary-dim: #ef7e5a;
+    --on-tertiary: #651900;
+
+    /* Error */
+    --error: #ff6e84;
+    --error-container: #a70138;
+
+    /* On-Surface */
+    --on-surface: #f9f5fd;
+    --on-surface-variant: #acaab1;
+    --on-background: #f9f5fd;
+
+    /* Outlines */
+    --outline: #76747b;
+    --outline-variant: #48474d;
+
+    /* Legacy aliases for backward compat */
+    --neon-cyan: var(--primary);
+    --neon-pink: var(--tertiary);
+    --neon-purple: var(--secondary);
+    --glass-bg: rgba(37, 37, 45, 0.4);
+    --glass-border: rgba(72, 71, 77, 0.25);
+    
+    /* Supernova Gradient (for CTAs) */
+    --gradient-supernova: linear-gradient(135deg, var(--secondary), var(--tertiary));
+    --gradient-spectral: linear-gradient(135deg, var(--primary), var(--secondary));
   }
 
   body {
-    @apply bg-transparent text-gray-100 antialiased min-h-screen;
+    @apply bg-transparent antialiased min-h-screen;
     font-family: 'Space Grotesk', system-ui, sans-serif;
+    color: var(--on-surface);
     margin: 0;
+    letter-spacing: -0.01em;
+    cursor: none;
+  }
+
+  /* Hide default cursor on interactive elements too */
+  a, button, input, textarea, select, [role="button"] {
+    cursor: none !important;
+  }
+
+  /* Only apply custom cursor on non-touch devices */
+  @media (pointer: coarse) {
+    body, a, button, input, textarea, select, [role="button"] {
+      cursor: auto !important;
+    }
+  }
+
+  /* Ensure WebGL canvas renders smoothly */
+  #universe-webgl-bg canvas {
+    image-rendering: auto;
+  }
+
+  /* Typography Scale */
+  h1, .display-lg {
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  h2, .headline-lg {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  h3, .headline-sm {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
   }
 }
 
 @layer components {
+  /* === Glass Card (The Shard) === */
   .glass-card {
-    @apply bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--glass-border)] rounded-2xl shadow-xl;
+    background: rgba(37, 37, 45, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(72, 71, 77, 0.15);
+    border-radius: 1.5rem;
+    box-shadow: 0 0 60px rgba(155, 81, 224, 0.04);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .glass-card:hover {
+    box-shadow: 0 8px 40px rgba(61, 194, 253, 0.08), 0 0 60px rgba(155, 81, 224, 0.06);
+    border-color: rgba(72, 71, 77, 0.3);
   }
 
+  /* === Neon Text Glows === */
   .neon-text-cyan {
-    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.3);
+    color: var(--primary);
+    text-shadow: 0 0 12px rgba(61, 194, 253, 0.5), 0 0 24px rgba(61, 194, 253, 0.25);
   }
-
   .neon-text-pink {
-    text-shadow: 0 0 10px rgba(255, 0, 255, 0.5), 0 0 20px rgba(255, 0, 255, 0.3);
+    color: var(--tertiary);
+    text-shadow: 0 0 12px rgba(255, 156, 126, 0.5), 0 0 24px rgba(255, 156, 126, 0.25);
+  }
+  .neon-text-purple {
+    color: var(--secondary);
+    text-shadow: 0 0 12px rgba(193, 128, 255, 0.5), 0 0 24px rgba(193, 128, 255, 0.25);
   }
 
+  /* === Buttons (Kinetic Triggers) === */
   .btn-neon {
-    @apply relative overflow-hidden rounded-full font-bold transition-all duration-300;
+    @apply relative overflow-hidden font-bold transition-all duration-300;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
   }
-  
+  .btn-neon:hover {
+    transform: translateY(-2px) scale(1.02);
+  }
+  .btn-neon:active {
+    transform: translateY(0) scale(0.98);
+  }
+
   .btn-neon-primary {
-    @apply bg-gradient-to-r from-[var(--neon-purple)] to-[var(--neon-pink)] text-white hover:shadow-[0_0_15px_rgba(255,0,255,0.6)];
+    background: linear-gradient(135deg, var(--secondary), var(--tertiary));
+    color: white;
+    box-shadow: 0 4px 20px rgba(193, 128, 255, 0.3);
+  }
+  .btn-neon-primary:hover {
+    box-shadow: 0 6px 30px rgba(193, 128, 255, 0.5), 0 0 15px rgba(255, 156, 126, 0.3);
   }
 
   .btn-neon-outline {
-    @apply border border-[var(--neon-cyan)] text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)] hover:text-black hover:shadow-[0_0_15px_rgba(0,240,255,0.6)];
+    border: 1.5px solid var(--primary);
+    color: var(--primary);
+    background: transparent;
+  }
+  .btn-neon-outline:hover {
+    background: var(--primary);
+    color: var(--on-primary);
+    box-shadow: 0 0 20px rgba(61, 194, 253, 0.4);
   }
 
+  /* === Inputs (Data Ports) === */
   .input-glass {
-    @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-[var(--neon-cyan)] focus:ring-1 focus:ring-[var(--neon-cyan)] transition-all;
+    @apply w-full px-4 py-3 transition-all duration-300;
+    background: rgba(37, 37, 45, 0.3);
+    border: 1px solid rgba(72, 71, 77, 0.2);
+    border-radius: 1rem;
+    color: var(--on-surface);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+  }
+  .input-glass::placeholder {
+    color: var(--on-surface-variant);
+    opacity: 0.6;
+  }
+  .input-glass:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(61, 194, 253, 0.15), 0 0 12px rgba(61, 194, 253, 0.1);
+  }
+
+  /* === Labels (Instrumentation) === */
+  .label-tech {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+  }
+
+  /* === Gradient Text === */
+  .gradient-text-spectral {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-text-supernova {
+    background: linear-gradient(135deg, var(--secondary), var(--tertiary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* === Avatar Glow === */
+  .avatar-glow {
+    box-shadow: 0 0 12px rgba(193, 128, 255, 0.4), 0 0 24px rgba(193, 128, 255, 0.15);
+    border: 2px solid var(--secondary);
+  }
+  .avatar-glow-cyan {
+    box-shadow: 0 0 12px rgba(61, 194, 253, 0.4), 0 0 24px rgba(61, 194, 253, 0.15);
+    border: 2px solid var(--primary);
+  }
+
+  /* === Ghost Border === */
+  .ghost-border {
+    border: 1px solid rgba(72, 71, 77, 0.15);
+  }
+
+  /* === Surface Tones === */
+  .surface-low {
+    background: var(--surface-container-low);
+  }
+  .surface-base {
+    background: var(--surface-container);
+  }
+  .surface-high {
+    background: var(--surface-container-high);
+  }
+  .surface-highest {
+    background: var(--surface-container-highest);
+  }
+
+  /* === Pulse Notification === */
+  .pulse-live {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 156, 126, 0.4); transform: scale(1); }
+    50% { box-shadow: 0 0 0 8px rgba(255, 156, 126, 0); transform: scale(1.05); }
+  }
+
+
+  /* === Entrance Animations === */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes float-in {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* === Cosmic Kinetic Typography === */
+  .cosmic-text {
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  /* === Glitch Effect === */
+  @keyframes glitch {
+    0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+    20% { clip-path: inset(20% 0 60% 0); transform: translate(-2px, 1px); }
+    40% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+    60% { clip-path: inset(40% 0 30% 0); transform: translate(-1px, 2px); }
+    80% { clip-path: inset(10% 0 80% 0); transform: translate(1px, -2px); }
+  }
+  .glitch-hover:hover {
+    animation: glitch 0.3s ease-in-out;
+  }
+
+  /* === Text Reveal === */
+  @keyframes text-reveal {
+    from { clip-path: inset(0 100% 0 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+  .animate-text-reveal {
+    animation: text-reveal 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  /* === Orbit Pulse (for active nav indicators) === */
+  @keyframes orbit-pulse {
+    0%, 100% { box-shadow: 0 0 6px rgba(61,194,253,0.4); }
+    50% { box-shadow: 0 0 16px rgba(61,194,253,0.7), 0 0 30px rgba(61,194,253,0.2); }
+  }
+  .orbit-pulse {
+    animation: orbit-pulse 2s ease-in-out infinite;
+  }
+
+  /* === Neon Glow on Hover === */
+  .neon-glow-hover {
+    transition: box-shadow 0.4s ease, border-color 0.4s ease;
+  }
+  .neon-glow-hover:hover {
+    box-shadow: 0 0 15px rgba(61,194,253,0.15), 0 0 30px rgba(61,194,253,0.08);
+    border-color: rgba(61,194,253,0.2) !important;
+  }
+
+  /* === Cosmic Glass Panel === */
+  .cosmic-glass {
+    background: rgba(14,14,19,0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(72,71,77,0.12);
+  }
+}
+
+@layer components {
+  /* === Scrollbar Styling (Enhanced Neon) === */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(61,194,253,0.15);
+    border-radius: 3px;
+    transition: background 0.3s;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(61,194,253,0.35);
   }
 }
 

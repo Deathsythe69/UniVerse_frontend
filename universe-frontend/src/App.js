@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute, ModeratorRoute, AdminRoute } from './components/layout/ProtectedRoutes';
 import UniverseBackground from './components/shared/UniverseBackground';
+import CosmicCursor from './components/shared/CosmicCursor';
 
 import AuthPage from './pages/AuthPage';
 import ForgotPassword from './pages/ForgotPassword';
@@ -18,7 +19,10 @@ import UserProfile from './pages/UserProfile';
 function App() {
   return (
     <AuthProvider>
+      {/* WebGL cosmic background — renders on ALL pages */}
       <UniverseBackground />
+      {/* Custom glowing cursor — desktop only */}
+      <CosmicCursor />
       <Router>
         <Routes>
           {/* Public Route */}

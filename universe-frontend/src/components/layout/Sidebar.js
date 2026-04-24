@@ -1,93 +1,336 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef, useState, useEffect } from 'react';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import { motion } from 'framer-motion';
 import {
   Home,
   ShieldAlert,
   LogOut,
   User as UserIcon,
   MessageSquare,
-  Calendar
+  Calendar,
+  Rocket,
+  LayoutDashboard
 } from 'lucide-react';
+
+const NAV_SECTIONS = [
+  {
+    label: 'PLANETARY',
+    items: [
+      { to: '/', icon: Home, label: 'Campus Orbit', end: true },
+      { to: 'profile', icon: UserIcon, label: 'Profile', dynamic: true },
+    ],
+  },
+  {
+    label: 'GALACTIC',
+    items: [
+      { to: '/events', icon: Calendar, label: 'Events' },
+      { to: '/messages', icon: MessageSquare, label: 'Comms Hub' },
+    ],
+  },
+];
 
 const Sidebar = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const sidebarRef = useRef(null);
+  const [mouseY, setMouseY] = useState(0);
+
+  // Track mouse Y for parallax glow
+  useEffect(() => {
+    const sidebar = sidebarRef.current;
+    if (!sidebar) return;
+    const handleMove = (e) => {
+      const rect = sidebar.getBoundingClientRect();
+      setMouseY(e.clientY - rect.top);
+    };
+    sidebar.addEventListener('mousemove', handleMove);
+    return () => sidebar.removeEventListener('mousemove', handleMove);
+  }, []);
 
   const handleLogout = () => {
     logout();
     navigate('/auth');
   };
 
-  const navLinkClass = ({ isActive }) =>
-    `flex items-center gap-4 px-6 py-4 rounded-xl transition-all duration-300 font-medium ${isActive
-      ? 'bg-white/10 text-[var(--neon-cyan)] shadow-[inset_4px_0_0_var(--neon-cyan)]'
-      : 'text-gray-400 hover:text-white hover:bg-white/5'
-    }`;
-
   return (
-    <div className="w-80 h-screen sticky top-0 border-r border-white/10 hidden md:flex flex-col flex-shrink-0 bg-[var(--space-dark)]/50 backdrop-blur-md">
-      {/* Logo Area */}
-      <Link to="/">
-        <div className="p-8 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full border border-[var(--neon-cyan)] flex items-center justify-center bg-[var(--neon-cyan)]/10 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
-            <img src="/cropped_circle_image.png" alt="Logo" className="w-full h-full object-cover" />
-          </div>
-          <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)] tracking-wider">
-            UniVerse
-          </h1>
+    <div
+      ref={sidebarRef}
+      className="w-80 h-screen sticky top-0 hidden md:flex flex-col flex-shrink-0 z-10 overflow-hidden"
+      style={{
+        background: 'rgba(14,14,19,0.85)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderRight: '1px solid rgba(72,71,77,0.1)',
+      }}
+    >
+      {/* Mouse proximity glow — follows cursor Y */}
+      <div
+        className="absolute right-0 w-px h-32 pointer-events-none transition-all duration-500"
+        style={{
+          top: mouseY - 64,
+          background: 'linear-gradient(transparent, rgba(61,194,253,0.3), transparent)',
+          boxShadow: '0 0 20px rgba(61,194,253,0.15)',
+          opacity: mouseY > 0 ? 1 : 0,
+        }}
+      />
 
-        </div>
+      {/* Logo Area */}
+      <Link to="/" className="hover:opacity-90 transition-opacity">
+        <motion.div
+          className="p-8 flex items-center gap-4"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          {/* Orbital Logo */}
+          <div className="relative w-12 h-12 flex-shrink-0">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-0 rounded-full"
+              style={{
+                border: '1px dashed rgba(193,128,255,0.4)',
+              }}
+            />
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-1 rounded-full"
+              style={{
+                border: '1px dashed rgba(61,194,253,0.25)',
+              }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center rounded-full"
+                 style={{ background: 'var(--surface-container-highest)' }}>
+              <Rocket className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+            </div>
+            {/* Orbiting dot */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-0"
+              style={{ transformOrigin: 'center' }}
+            >
+              <div className="absolute -top-0.5 left-1/2 w-1.5 h-1.5 rounded-full -translate-x-1/2"
+                   style={{
+                     background: 'var(--tertiary)',
+                     boxShadow: '0 0 6px rgba(255,156,126,0.6)',
+                   }} />
+            </motion.div>
+          </div>
+
+          <div>
+            <h1 className="text-2xl font-black tracking-wider leading-none"
+                style={{
+                  background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}>
+              UniVerse
+            </h1>
+            <p className="text-[9px] font-bold tracking-[0.35em] uppercase mt-1"
+               style={{ color: 'var(--on-surface-variant)' }}>
+              Campus Platform
+            </p>
+          </div>
+        </motion.div>
       </Link>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4 space-y-2 mt-4">
-        <NavLink to="/" end className={navLinkClass}>
-          <Home className="w-6 h-6" />
-          <span className="text-lg">Main Feed</span>
-        </NavLink>
+      {/* Navigation Sections */}
+      <nav className="flex-1 px-4 space-y-6 mt-2 overflow-y-auto">
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.label}>
+            {/* Section divider */}
+            <div className="flex items-center gap-3 px-4 mb-2">
+              <span className="text-[9px] font-black tracking-[0.3em] uppercase"
+                    style={{ color: 'var(--outline)' }}>
+                {section.label}
+              </span>
+              <div className="flex-1 h-px" style={{ background: 'var(--outline-variant)', opacity: 0.3 }} />
+            </div>
 
-        <NavLink to={user?.id ? `/user/${user.id}` : "/profile"} className={navLinkClass}>
-          <UserIcon className="w-6 h-6" />
-          <span className="text-lg">Profile</span>
-        </NavLink>
+            <div className="space-y-1">
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const to = item.dynamic && user?.id ? `/user/${user.id}` : item.to;
+                return (
+                  <NavLink
+                    key={item.label}
+                    to={to}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      `group relative flex items-center gap-4 px-5 py-3.5 rounded-xl transition-all duration-300 font-medium ${
+                        isActive
+                          ? 'text-white'
+                          : 'text-[var(--on-surface-variant)] hover:text-white'
+                      }`
+                    }
+                    style={({ isActive }) => ({
+                      background: isActive ? 'rgba(61,194,253,0.06)' : 'transparent',
+                    })}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {/* Active indicator — orbital dot */}
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeNavDot"
+                            className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full"
+                            style={{
+                              background: 'var(--primary)',
+                              boxShadow: '0 0 10px rgba(61,194,253,0.5), 2px 0 20px rgba(61,194,253,0.2)',
+                            }}
+                            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                          />
+                        )}
+                        <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[var(--primary)]' : ''}`} />
+                        <span className="text-sm">{item.label}</span>
 
-        <NavLink to="/events" className={navLinkClass}>
-          <Calendar className="w-6 h-6" />
-          <span className="text-lg">Events</span>
-        </NavLink>
+                        {/* Hover glow */}
+                        <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                             style={{
+                               background: 'radial-gradient(ellipse at left center, rgba(61,194,253,0.04), transparent 70%)',
+                             }} />
+                      </>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          </div>
+        ))}
 
-        <NavLink to="/messages" className={navLinkClass}>
-          <MessageSquare className="w-6 h-6" />
-          <span className="text-lg">Messages</span>
-        </NavLink>
-
-        {(user?.role === 'moderator' || user?.role === 'supervisor') && (
-          <NavLink to="/mod-dashboard" className={navLinkClass}>
-            <ShieldAlert className="w-6 h-6 text-yellow-500" />
-            <span className="text-lg text-yellow-500">Mod Dashboard</span>
-          </NavLink>
+        {/* Moderator/Admin Section */}
+        {(user?.role === 'moderator' || user?.role === 'supervisor' || user?.role === 'admin') && (
+          <div>
+            <div className="flex items-center gap-3 px-4 mb-2">
+              <span className="text-[9px] font-black tracking-[0.3em] uppercase"
+                    style={{ color: 'var(--error)' }}>
+                COSMIC
+              </span>
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,110,132,0.2)' }} />
+            </div>
+            <div className="space-y-1">
+              {(user?.role === 'moderator' || user?.role === 'supervisor') && (
+                <NavLink
+                  to="/mod-dashboard"
+                  className={({ isActive }) =>
+                    `group relative flex items-center gap-4 px-5 py-3.5 rounded-xl transition-all duration-300 font-medium ${
+                      isActive ? 'text-[var(--error)]' : 'text-[var(--on-surface-variant)] hover:text-[var(--error)]'
+                    }`
+                  }
+                  style={({ isActive }) => ({
+                    background: isActive ? 'rgba(255,110,132,0.06)' : 'transparent',
+                  })}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeNavDot"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full"
+                          style={{
+                            background: 'var(--error)',
+                            boxShadow: '0 0 10px rgba(255,110,132,0.5)',
+                          }}
+                          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                        />
+                      )}
+                      <ShieldAlert className="w-5 h-5" />
+                      <span className="text-sm">System Control</span>
+                    </>
+                  )}
+                </NavLink>
+              )}
+              {user?.role === 'admin' && (
+                <NavLink
+                  to="/admin"
+                  className={({ isActive }) =>
+                    `group relative flex items-center gap-4 px-5 py-3.5 rounded-xl transition-all duration-300 font-medium ${
+                      isActive ? 'text-[var(--tertiary)]' : 'text-[var(--on-surface-variant)] hover:text-[var(--tertiary)]'
+                    }`
+                  }
+                  style={({ isActive }) => ({
+                    background: isActive ? 'rgba(255,156,126,0.06)' : 'transparent',
+                  })}
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeNavDot"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full"
+                          style={{
+                            background: 'var(--tertiary)',
+                            boxShadow: '0 0 10px rgba(255,156,126,0.5)',
+                          }}
+                          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                        />
+                      )}
+                      <LayoutDashboard className="w-5 h-5" />
+                      <span className="text-sm">Admin Bridge</span>
+                    </>
+                  )}
+                </NavLink>
+              )}
+            </div>
+          </div>
         )}
       </nav>
 
-      {/* User Profile & Logout Bottom */}
-      <div className="p-6 border-t border-white/10 space-y-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center border border-gray-700">
-            <UserIcon className="w-6 h-6 text-gray-400" />
+      {/* User Profile & Logout — Bottom */}
+      <div className="p-5 mt-auto mx-3 mb-3 rounded-2xl space-y-3"
+           style={{
+             background: 'rgba(25,25,31,0.6)',
+             border: '1px solid rgba(72,71,77,0.12)',
+           }}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+               style={{
+                 border: '2px solid var(--secondary)',
+                 boxShadow: '0 0 12px rgba(193,128,255,0.3)',
+                 background: 'var(--surface-bright)',
+               }}>
+            {user?.avatar ? (
+              <img src={`http://localhost:5000${user.avatar}`} alt="avatar" className="w-full h-full object-cover" />
+            ) : (
+              <UserIcon className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+            )}
           </div>
-          <div>
-            <p className="font-bold text-white leading-tight">{user?.name}</p>
-            <p className="text-sm text-[var(--neon-cyan)]">{user?.role}</p>
+          <div className="overflow-hidden flex-1">
+            <p className="font-bold text-sm leading-tight truncate" style={{ color: 'var(--on-surface)' }}>
+              {user?.name || 'Astronaut'}
+            </p>
+            <p className="text-[10px] font-bold tracking-[0.1em] uppercase truncate"
+               style={{ color: 'var(--primary)' }}>
+              {user?.role || 'explorer'}
+            </p>
           </div>
         </div>
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-white/10 text-gray-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 transition-all font-medium"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-xs tracking-wider uppercase transition-all duration-300 hover:scale-[1.02]"
+          style={{
+            border: '1px solid rgba(72,71,77,0.2)',
+            color: 'var(--on-surface-variant)',
+            background: 'transparent',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(255,110,132,0.3)';
+            e.currentTarget.style.color = 'var(--error)';
+            e.currentTarget.style.background = 'rgba(255,110,132,0.05)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(72,71,77,0.2)';
+            e.currentTarget.style.color = 'var(--on-surface-variant)';
+            e.currentTarget.style.background = 'transparent';
+          }}
         >
-          <LogOut className="w-5 h-5" />
-          Log Out
+          <LogOut className="w-3.5 h-3.5" />
+          Disengage
         </button>
       </div>
     </div>

@@ -1,9 +1,10 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Rocket, ShieldPlus, ArrowRight } from 'lucide-react';
+import { Rocket, ArrowRight, Sparkles } from 'lucide-react';
 import { auth } from '../firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -91,153 +92,268 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex text-white relative flex-col md:flex-row">
-      <div className="hidden md:flex flex-1 flex-col justify-center items-center p-12 relative z-10 border-r border-[var(--glass-border)]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--space-dark)] to-transparent opacity-80 z-0"></div>
-        <div className="z-10 text-center space-y-6 max-w-lg">
-          <div className="w-32 h-32 rounded-full border-4 border-dashed border-[var(--neon-pink)] mx-auto flex items-center justify-center shadow-[0_0_50px_rgba(255,0,255,0.4)] animate-[spin_10s_linear_infinite]">
-            <Rocket className="w-16 h-16 text-[var(--neon-cyan)] animate-[spin_10s_linear_infinite_reverse]" />
+    <div className="min-h-screen flex text-white relative flex-col md:flex-row" style={{ background: 'var(--surface)' }}>
+      {/* Left — Cinematic Hero */}
+      <div className="hidden md:flex flex-1 flex-col justify-center items-center p-12 relative z-10">
+        {/* Ambient background gradients */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20"
+               style={{ background: 'radial-gradient(circle, rgba(193,128,255,0.3) 0%, transparent 70%)' }} />
+          <div className="absolute bottom-1/4 right-1/3 w-80 h-80 rounded-full opacity-15"
+               style={{ background: 'radial-gradient(circle, rgba(61,194,253,0.3) 0%, transparent 70%)' }} />
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, type: "spring" }}
+          className="z-10 text-center space-y-8 max-w-lg"
+        >
+          {/* Animated Logo */}
+          <div className="relative w-36 h-36 mx-auto">
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0 rounded-full border-2 border-dashed"
+              style={{ borderColor: 'var(--secondary)' }}
+            />
+            <motion.div 
+              animate={{ rotate: -360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <Rocket className="w-16 h-16" style={{ color: 'var(--primary)' }} />
+            </motion.div>
+            {/* Glow ring */}
+            <div className="absolute inset-0 rounded-full" 
+                 style={{ boxShadow: '0 0 40px rgba(193,128,255,0.3), 0 0 80px rgba(193,128,255,0.1)' }} />
           </div>
-          <h1 className="text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)]">
+
+          <h1 className="text-7xl font-black gradient-text-spectral leading-tight" 
+              style={{ textShadow: '0 0 30px rgba(61,194,253,0.15)' }}>
             UniVerse.
           </h1>
-          <p className="text-xl text-gray-300">
-            A secure campus social network designed for the digital scale. Connect. Explore. Evolve.
+          <p className="text-lg leading-relaxed" style={{ color: 'var(--on-surface-variant)' }}>
+            A secure campus social network designed for the digital scale. 
+            <span className="block mt-2 font-medium" style={{ color: 'var(--primary)' }}>
+              Connect. Explore. Evolve.
+            </span>
           </p>
-        </div>
+        </motion.div>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center items-center p-6 relative z-10">
-        <div className="w-full max-w-md glass-card p-10 space-y-8">
+      {/* Right — Auth Form */}
+      <div className="flex-1 flex flex-col justify-center items-center p-6 md:p-12 relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="w-full max-w-md glass-card p-10 space-y-8"
+        >
+          {/* Mode Toggle Tabs */}
+          <div className="flex rounded-full p-1" style={{ background: 'var(--surface-container-lowest)' }}>
+            <button 
+              onClick={() => !isLogin && handleToggle()}
+              className="flex-1 py-2.5 rounded-full text-sm font-bold transition-all duration-300"
+              style={{ 
+                background: isLogin ? 'var(--gradient-spectral)' : 'transparent',
+                backgroundImage: isLogin ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'none',
+                color: isLogin ? 'white' : 'var(--on-surface-variant)'
+              }}
+            >
+              Login
+            </button>
+            <button 
+              onClick={() => isLogin && handleToggle()}
+              className="flex-1 py-2.5 rounded-full text-sm font-bold transition-all duration-300"
+              style={{ 
+                backgroundImage: !isLogin ? 'linear-gradient(135deg, var(--tertiary), var(--secondary))' : 'none',
+                color: !isLogin ? 'white' : 'var(--on-surface-variant)'
+              }}
+            >
+              Register
+            </button>
+          </div>
           
+          {/* Header */}
           <div className="text-center space-y-2">
-            <h2 className="text-4xl font-bold flex items-center justify-center gap-3">
+            <motion.h2 
+              key={isLogin ? 'login' : 'register'}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-3xl font-bold flex items-center justify-center gap-3"
+            >
               {isLogin ? (
-                <><span className="neon-text-cyan">Login</span></>
+                <span className="neon-text-cyan">Welcome Back</span>
               ) : (
-                <><ShieldPlus className="w-8 h-8 text-[var(--neon-pink)]"/> <span className="neon-text-pink">Join Us</span></>
+                <><Sparkles className="w-7 h-7" style={{ color: 'var(--tertiary)' }} /> <span className="neon-text-purple">Join the Galaxy</span></>
               )}
-            </h2>
-            <p className="text-gray-400">
-              {isLogin ? 'Access your campus feed.' : 'Register with your @gmail.com university email.'}
+            </motion.h2>
+            <p style={{ color: 'var(--on-surface-variant)' }} className="text-sm">
+              {isLogin ? 'Access your campus orbit.' : 'Register with your university email.'}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {showOtp ? (
-              <div>
-                <p className="text-gray-300 text-sm mb-4 text-center">Enter the OTP sent to {formData.email}</p>
-                <input
-                  type="text"
-                  name="otp"
-                  placeholder="6-Digit OTP"
-                  className="input-glass text-center tracking-[0.5em] font-bold text-xl"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  maxLength={6}
-                  required
-                />
-              </div>
-            ) : (
-              <>
-                {!isLogin && (
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <AnimatePresence mode="wait">
+              {showOtp ? (
+                <motion.div key="otp" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <p className="text-sm mb-4 text-center" style={{ color: 'var(--on-surface-variant)' }}>
+                    Enter the OTP sent to <span style={{ color: 'var(--primary)' }}>{formData.email}</span>
+                  </p>
+                  <input
+                    type="text"
+                    name="otp"
+                    placeholder="000000"
+                    className="input-glass text-center tracking-[0.5em] font-bold text-xl"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    maxLength={6}
+                    required
+                  />
+                </motion.div>
+              ) : (
+                <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+                  {!isLogin && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}>
+                      <label className="label-tech block mb-1.5">Full Name</label>
+                      <input
+                        type="text"
+                        name="name"
+                        placeholder="e.g. Ryland Grace"
+                        className="input-glass"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                      />
+                    </motion.div>
+                  )}
                   <div>
+                    <label className="label-tech block mb-1.5">Email</label>
                     <input
-                      type="text"
-                      name="name"
-                      placeholder="Full Name"
+                      type="email"
+                      name="email"
+                      placeholder="you@university.edu"
                       className="input-glass"
-                      value={formData.name}
+                      value={formData.email}
                       onChange={handleChange}
                       required
                     />
                   </div>
-                )}
-                <div>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="University Email (@gmail.com)"
-                    className="input-glass"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="Password (min 6 chars)"
-                    className="input-glass"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                {!isLogin && (
                   <div>
+                    <label className="label-tech block mb-1.5">Password</label>
                     <input
                       type="password"
-                      name="confirmPassword"
-                      placeholder="Confirm Password"
+                      name="password"
+                      placeholder="Min 6 characters"
                       className="input-glass"
-                      value={formData.confirmPassword}
+                      value={formData.password}
                       onChange={handleChange}
                       required
                     />
                   </div>
-                )}
-              </>
-            )}
+                  {!isLogin && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}>
+                      <label className="label-tech block mb-1.5">Confirm Password</label>
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        placeholder="Re-enter password"
+                        className="input-glass"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        required
+                      />
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
+            {/* Error/Success Messages */}
             {error && (
-               <div className={`p-3 rounded-lg border text-sm text-center ${error.toLowerCase().includes('success') ? 'border-green-500/50 bg-green-500/10 text-green-400' : 'border-red-500/50 bg-red-500/10 text-red-400'}`}>
+              <motion.div 
+                initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-xl text-sm text-center"
+                style={{ 
+                  background: error.toLowerCase().includes('success') 
+                    ? 'rgba(0,255,65,0.08)' 
+                    : 'rgba(255,110,132,0.08)',
+                  border: `1px solid ${error.toLowerCase().includes('success') 
+                    ? 'rgba(0,255,65,0.3)' 
+                    : 'rgba(255,110,132,0.3)'}`,
+                  color: error.toLowerCase().includes('success') ? '#00FF41' : 'var(--error)'
+                }}
+              >
                 {error}
-              </div>
+              </motion.div>
             )}
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 text-lg btn-neon btn-neon-primary flex justify-center items-center gap-2"
+              className="w-full py-4 text-lg btn-neon btn-neon-primary flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Processing...' : (showOtp ? 'Verify OTP' : (isLogin ? 'Launch' : 'Register'))}
-              {!loading && <ArrowRight className="w-5 h-5" />}
+              {loading ? (
+                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  {showOtp ? 'Verify OTP' : (isLogin ? 'Launch' : 'Create Account')}
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
             </button>
           </form>
 
+          {/* Forgot Password */}
           {isLogin && (
             <div className="flex justify-center -mt-2">
-              <Link to="/forgot-password" className="text-sm text-gray-400 hover:text-white transition-colors underline decoration-dashed.">
+              <Link to="/forgot-password" className="text-sm transition-colors underline decoration-dashed underline-offset-4"
+                    style={{ color: 'var(--on-surface-variant)' }}
+                    onMouseOver={(e) => e.target.style.color = 'var(--primary)'}
+                    onMouseOut={(e) => e.target.style.color = 'var(--on-surface-variant)'}>
                 Forgot Password?
               </Link>
             </div>
           )}
 
+          {/* Divider */}
           <div className="space-y-4 pt-2">
             <div className="relative flex items-center">
-              <div className="flex-grow border-t border-[var(--glass-border)]"></div>
-              <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">Or</span>
-              <div className="flex-grow border-t border-[var(--glass-border)]"></div>
+              <div className="flex-grow border-t" style={{ borderColor: 'var(--outline-variant)' }}></div>
+              <span className="flex-shrink-0 mx-4 text-sm label-tech">Or continue with</span>
+              <div className="flex-grow border-t" style={{ borderColor: 'var(--outline-variant)' }}></div>
             </div>
+            
+            {/* Google Button */}
             <button 
               type="button"
               onClick={handleGoogleLogin} 
               disabled={loading}
-              className="w-full py-3 flex items-center justify-center gap-3 bg-white text-gray-900 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-[0_4px_14px_0_rgba(255,255,255,0.2)]"
+              className="w-full py-3 flex items-center justify-center gap-3 rounded-full font-bold transition-all duration-300 hover:scale-[1.02]"
+              style={{ 
+                background: 'var(--surface-container-highest)',
+                border: '1px solid var(--outline-variant)',
+                color: 'var(--on-surface)'
+              }}
             >
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5"/>
               Sign in with Google
             </button>
           </div>
 
+          {/* Toggle Auth Mode */}
           <div className="text-center pt-2">
-            <button onClick={handleToggle} className="text-sm text-gray-400 hover:text-white transition-colors underline decoration-dashed underline-offset-4">
+            <button onClick={handleToggle} className="text-sm transition-colors underline decoration-dashed underline-offset-4"
+                    style={{ color: 'var(--on-surface-variant)' }}
+                    onMouseOver={(e) => e.target.style.color = 'var(--on-surface)'}
+                    onMouseOut={(e) => e.target.style.color = 'var(--on-surface-variant)'}>
               {isLogin ? "Don't have an account? Create one." : "Already have a clearance? Login here."}
             </button>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

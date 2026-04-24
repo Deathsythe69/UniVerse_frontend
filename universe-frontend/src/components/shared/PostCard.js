@@ -3,7 +3,7 @@ import { Heart, MessageCircle, Flag, Send, Share2, X, Trash2 } from 'lucide-reac
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import api from '../../api/axiosConfig';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const BASE_URL = 'http://localhost:5000';
 
@@ -68,7 +68,7 @@ const PostCard = ({ post, currentUserId, onLikeUpdate, onDelete }) => {
     setReporting(true);
     try {
       await api.put(`/posts/report/${localPost._id}`, { reason: reportReason, details: reportDetails });
-      alert("Post reported to moderators.");
+      alert("Post reported to command.");
       setShowReportModal(false);
     } catch (err) {
       console.error(err);
@@ -78,7 +78,7 @@ const PostCard = ({ post, currentUserId, onLikeUpdate, onDelete }) => {
   };
   
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    if (!window.confirm("Purge this transmission from the logs?")) return;
     try {
       await api.delete(`/posts/${localPost._id}`);
       if (onDelete) onDelete(localPost._id);
@@ -106,7 +106,7 @@ const PostCard = ({ post, currentUserId, onLikeUpdate, onDelete }) => {
         text: shareText,
         receiverId
       });
-      alert('Post shared in direct messages!');
+      alert('Transmission relayed to Direct Messages!');
       setShowShareModal(false);
     } catch (err) {
       console.error(err);
@@ -115,12 +115,12 @@ const PostCard = ({ post, currentUserId, onLikeUpdate, onDelete }) => {
   };
 
   const renderContent = (p) => (
-    <div className="mb-6">
-      {p.content && <p className="text-gray-200 text-lg leading-relaxed whitespace-pre-wrap mb-4">{p.content}</p>}
+    <div className="mb-6 relative z-10">
+      {p.content && <p className="text-[var(--on-surface)] text-[15px] leading-relaxed whitespace-pre-wrap mb-4">{p.content}</p>}
       
       {p.image && (
-        <div className="rounded-xl overflow-hidden border border-[var(--glass-border)] max-h-96 flex justify-center bg-black/50">
-          <img src={`${BASE_URL}${p.image}`} alt="Post content" className="max-w-full max-h-96 object-contain" />
+        <div className="rounded-2xl overflow-hidden ghost-border max-h-[400px] flex justify-center bg-[var(--surface-container-highest)]">
+          <img src={`${BASE_URL}${p.image}`} alt="Media" className="w-full object-cover max-h-[400px] hover:scale-105 transition-transform duration-500" />
         </div>
       )}
     </div>
@@ -128,198 +128,222 @@ const PostCard = ({ post, currentUserId, onLikeUpdate, onDelete }) => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, type: "spring", stiffness: 200, damping: 20 }}
-      whileHover={{ y: -4 }}
-      className="glass-card backdrop-blur-xl bg-black/40 border border-white/10 shadow-lg hover:shadow-[0_8px_32px_rgba(220,20,60,0.15)] hover:border-white/20 p-6 mb-6 relative group overflow-hidden"
+      whileHover={{ y: -2 }}
+      className="glass-card p-6 mb-6 relative group overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-3">
-          <Link to={`/user/${localPost.user?._id}`} className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center font-bold text-white shadow-[0_0_10px_rgba(255,0,255,0.4)] bg-[var(--neon-purple)] hover:ring-2 hover:ring-[var(--neon-cyan)] transition-all">
+      <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+      <div className="flex justify-between items-start mb-4 relative z-10">
+        <div className="flex items-center gap-4">
+          <Link to={`/user/${localPost.user?._id}`} className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center font-bold text-[var(--on-surface)] border border-[var(--outline-variant)] bg-[var(--surface-container-high)] hover:border-[var(--primary)] transition-all shadow-md group/avatar">
              {localPost.user?.avatar ? (
-                <img src={`${BASE_URL}${localPost.user.avatar}`} alt="avatar" className="w-full h-full object-cover" />
+                <img src={`${BASE_URL}${localPost.user.avatar}`} alt="avatar" className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform" />
              ) : (
                 localPost.user?.name?.charAt(0) || 'U'
              )}
           </Link>
           <div>
-            <Link to={`/user/${localPost.user?._id}`} className="flex items-center gap-2 hover:underline">
-              <h4 className="font-bold text-gray-100">{localPost.user?.name || 'Unknown Student'}</h4>
+            <Link to={`/user/${localPost.user?._id}`} className="flex items-center gap-2 hover:underline decoration-[var(--primary)] underline-offset-2">
+              <h4 className="font-bold text-[var(--on-surface)]">{localPost.user?.name || 'Unknown User'}</h4>
             </Link>
-            <p className="text-xs text-gray-400">{moment(localPost.createdAt).fromNow()}</p>
+            <p className="text-[11px] text-[var(--on-surface-variant)] uppercase tracking-wider font-semibold">{moment(localPost.createdAt).fromNow()}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
           {localPost.user?._id === currentUserId && (
             <button 
               onClick={handleDelete}
-              className="text-gray-500 hover:text-red-500 transition-colors" 
-              title="Delete Post"
+              className="p-2 rounded-full text-[var(--on-surface-variant)] hover:bg-[var(--error-container)]/20 hover:text-[var(--error)] transition-colors" 
+              title="Delete Transmission"
             >
-              <Trash2 className="w-5 h-5" />
+              <Trash2 className="w-4 h-4" />
             </button>
           )}
           <button 
             onClick={handleReport}
             disabled={reporting}
-            className="text-gray-500 hover:text-red-400 transition-colors" 
-            title="Report Post"
+            className="p-2 rounded-full text-[var(--on-surface-variant)] hover:bg-[var(--tertiary)]/10 hover:text-[var(--tertiary)] transition-colors" 
+            title="Flag Signal"
           >
-            <Flag className="w-5 h-5" />
+            <Flag className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {renderContent(localPost)}
 
-      <div className="flex items-center gap-6 pt-4 border-t border-[var(--glass-border)]">
+      <div className="flex items-center gap-6 pt-4 border-t border-[var(--outline-variant)]/50 relative z-10 text-[13px] font-bold">
         <button 
           onClick={handleLike}
-          className={`flex items-center gap-2 group transition-colors ${hasLiked ? 'text-[var(--neon-pink)]' : 'text-gray-400 hover:text-[var(--neon-pink)]'}`}
+          className={`flex items-center gap-2 transition-all ${hasLiked ? 'text-[var(--tertiary)]' : 'text-[var(--on-surface-variant)] hover:text-[var(--tertiary)]'}`}
         >
-          <Heart className={`w-6 h-6 transition-all ${hasLiked ? 'fill-current scale-110 drop-shadow-[0_0_8px_rgba(255,0,255,0.6)]' : 'group-hover:scale-110'}`} />
-          <span className="font-bold">{totalLikes}</span>
+          <div className="relative">
+             <Heart className={`w-5 h-5 transition-all ${hasLiked ? 'fill-current scale-110 shadow-[var(--tertiary)] drop-shadow-md' : 'hover:scale-110'}`} />
+          </div>
+          <span>{totalLikes}</span>
         </button>
 
         <button 
           onClick={() => setShowComments(!showComments)}
-          className="flex items-center gap-2 text-gray-400 hover:text-[var(--neon-cyan)] transition-colors group"
+          className="flex items-center gap-2 text-[var(--on-surface-variant)] hover:text-[var(--primary)] transition-all"
         >
-          <MessageCircle className="w-6 h-6 group-hover:scale-110 transition-transform" />
-          <span className="font-bold">{localPost.comments?.length || 0}</span>
+          <MessageCircle className="w-5 h-5 hover:scale-110 transition-transform" />
+          <span>{localPost.comments?.length || 0}</span>
         </button>
         
         <button 
           onClick={fetchConversationsForShare}
-          className="flex items-center gap-2 text-gray-400 hover:text-[var(--neon-purple)] transition-colors group ml-auto"
-          title="Share to Direct Messages"
+          className="flex items-center gap-2 text-[var(--on-surface-variant)] hover:text-[var(--secondary)] transition-all ml-auto"
+          title="Relay via Secure Comms"
         >
-          <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          <Share2 className="w-5 h-5 hover:scale-110 transition-transform" />
         </button>
       </div>
 
-      {showComments && (
-        <div className="mt-6 space-y-4">
-          <form onSubmit={handleComment} className="flex gap-2">
-            <input 
-              type="text" 
-              placeholder="Write a comment..."
-              className="input-glass !py-2 !rounded-full flex-1"
-              value={commentText}
-              onChange={e => setCommentText(e.target.value)}
-            />
-            <button 
-              type="submit" 
-              className="w-10 h-10 rounded-full bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] flex items-center justify-center hover:bg-[var(--neon-cyan)] hover:text-black transition-all hover:shadow-[0_0_10px_rgba(0,240,255,0.5)]"
-            >
-              <Send className="w-5 h-5 -ml-1 mt-1" />
-            </button>
-          </form>
-
-          <div className="space-y-3 mt-4 max-h-48 overflow-y-auto pr-2">
-            {localPost.comments?.map((comment, idx) => (
-              <div key={idx} className="bg-white/5 rounded-xl p-3 flex gap-3">
-                <Link to={`/user/${comment.user?._id}`} className="w-8 h-8 rounded-full overflow-hidden bg-gray-700 flex-shrink-0 flex items-center justify-center text-xs font-bold text-white hover:ring-2 hover:ring-[var(--neon-cyan)] transition-all">
-                  {comment.user?.avatar ? (
-                     <img src={`${BASE_URL}${comment.user.avatar}`} alt="av" className="w-full h-full object-cover" />
-                  ) : (
-                     comment.user?.name?.charAt(0) || 'U'
-                  )}
-                </Link>
-                <div>
-                  <div className="flex items-baseline gap-2">
-                    <Link to={`/user/${comment.user?._id}`} className="font-bold text-sm text-gray-200 hover:underline">{comment.user?.name || 'Someone'}</Link>
-                    <span className="text-xs text-gray-500">{moment(comment.createdAt).fromNow()}</span>
-                  </div>
-                  <p className="text-gray-300 text-sm mt-1">{comment.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Share Modal */}
-      {showShareModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="glass-card w-full max-w-sm p-6 relative">
-            <button onClick={() => setShowShareModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-              <X className="w-5 h-5"/>
-            </button>
-            <h3 className="text-xl font-bold text-white mb-4">Share to Direct Messages</h3>
-            <div className="max-h-60 overflow-y-auto space-y-2">
-              {conversations.length === 0 ? (
-                <p className="text-gray-500 text-sm">No active direct messages. Follow someone to start messaging.</p>
-              ) : (
-                conversations.map(c => {
-                  const friend = c.members.find(m => m._id !== currentUserId);
-                  if (!friend) return null;
-                  return (
-                    <button 
-                      key={c._id}
-                      onClick={() => handleShareToDM(c._id, friend._id)}
-                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-white/10 transition-colors text-left"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-[var(--neon-purple)] flex items-center justify-center text-xs font-bold text-white overflow-hidden">
-                        {friend.avatar ? <img src={`${BASE_URL}${friend.avatar}`} alt="av" className="w-full h-full object-cover" /> : friend.name?.charAt(0)}
-                      </div>
-                      <span className="font-bold text-white text-sm">{friend.name}</span>
-                    </button>
-                  )
-                })
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Report Modal */}
-      {showReportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="glass-card w-full max-w-sm p-6 relative">
-            <button onClick={() => setShowReportModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-              <X className="w-5 h-5"/>
-            </button>
-            <h3 className="text-xl font-bold text-white mb-4">Report Violation</h3>
-            <form onSubmit={submitReport} className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Violation Type</label>
-                <select 
-                  className="input-glass w-full" 
-                  value={reportReason} 
-                  onChange={(e) => setReportReason(e.target.value)}
-                >
-                  <option value="Spam" className="bg-black">Spam / Promotion</option>
-                  <option value="Harassment" className="bg-black">Harassment / Bullying</option>
-                  <option value="Hate Speech" className="bg-black">Hate Speech</option>
-                  <option value="Explicit Content" className="bg-black">Explicit Content</option>
-                  <option value="Other" className="bg-black">Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Details (Optional)</label>
-                <textarea 
-                  className="input-glass w-full"
-                  rows={3}
-                  value={reportDetails}
-                  onChange={(e) => setReportDetails(e.target.value)}
-                  placeholder="Provide more context..."
-                />
-              </div>
+      <AnimatePresence>
+        {showComments && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-6 space-y-4 relative z-10"
+          >
+            <form onSubmit={handleComment} className="flex gap-2">
+              <input 
+                type="text" 
+                placeholder="Transmit comment..."
+                className="input-glass !py-2.5 !rounded-full flex-1"
+                value={commentText}
+                onChange={e => setCommentText(e.target.value)}
+              />
               <button 
                 type="submit" 
-                disabled={reporting}
-                className="w-full py-2 bg-[var(--neon-pink)] text-white font-bold rounded-lg hover:shadow-[0_0_15px_rgba(255,0,255,0.5)] transition-all"
+                disabled={!commentText.trim()}
+                className="w-11 h-11 flex-shrink-0 rounded-full btn-neon btn-neon-outline flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed group/btn"
               >
-                {reporting ? 'Submitting...' : 'Submit Report'}
+                <Send className="w-5 h-5 group-hover/btn:scale-110 transition-transform -ml-1 mt-0.5" />
               </button>
             </form>
+
+            <div className="space-y-3 mt-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+              {localPost.comments?.map((comment, idx) => (
+                <div key={idx} className="surface-highest rounded-xl p-3 flex gap-3 ghost-border">
+                  <Link to={`/user/${comment.user?._id}`} className="w-8 h-8 rounded-full overflow-hidden bg-[var(--surface-container-low)] flex-shrink-0 border border-[var(--outline-variant)] flex items-center justify-center text-xs font-bold text-[var(--on-surface)] hover:border-[var(--primary)] transition-all">
+                    {comment.user?.avatar ? (
+                       <img src={`${BASE_URL}${comment.user.avatar}`} alt="av" className="w-full h-full object-cover" />
+                    ) : (
+                       comment.user?.name?.charAt(0) || 'U'
+                    )}
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline justify-between mb-0.5">
+                      <Link to={`/user/${comment.user?._id}`} className="font-bold text-[13px] text-[var(--on-surface)] truncate hover:underline decoration-[var(--primary)]">{comment.user?.name || 'Someone'}</Link>
+                      <span className="text-[10px] text-[var(--on-surface-variant)] uppercase font-semibold flex-shrink-0 ml-2">{moment(comment.createdAt).fromNow()}</span>
+                    </div>
+                    <p className="text-[var(--on-surface-variant)] text-[13px] leading-snug break-words">{comment.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Share Modal */}
+      <AnimatePresence>
+        {showShareModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--space-void)]/80 backdrop-blur-md">
+            <motion.div 
+               initial={{ opacity: 0, scale: 0.9 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0, scale: 0.9 }}
+               className="glass-card w-full max-w-sm p-6 relative"
+             >
+              <button onClick={() => setShowShareModal(false)} className="absolute top-4 right-4 text-[var(--on-surface-variant)] hover:text-white transition-colors">
+                <X className="w-5 h-5"/>
+              </button>
+              <h3 className="text-xl font-bold gradient-text-spectral mb-4">Relay Transmission</h3>
+              <div className="max-h-60 overflow-y-auto space-y-2 custom-scrollbar">
+                {conversations.length === 0 ? (
+                  <p className="text-[var(--on-surface-variant)] text-sm">No active comms links found.</p>
+                ) : (
+                  conversations.map(c => {
+                    const friend = c.members.find(m => m._id !== currentUserId);
+                    if (!friend) return null;
+                    return (
+                      <button 
+                        key={c._id}
+                        onClick={() => handleShareToDM(c._id, friend._id)}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--surface-container-low)] ghost-border hover:border-[var(--secondary)] transition-all text-left"
+                      >
+                        <div className="w-8 h-8 rounded-full border border-[var(--outline-variant)] bg-[var(--surface-highest)] flex items-center justify-center text-xs font-bold text-[var(--on-surface)] overflow-hidden">
+                          {friend.avatar ? <img src={`${BASE_URL}${friend.avatar}`} alt="av" className="w-full h-full object-cover" /> : friend.name?.charAt(0)}
+                        </div>
+                        <span className="font-bold text-[var(--on-surface)] text-sm truncate">{friend.name}</span>
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
+
+      {/* Report Modal */}
+      <AnimatePresence>
+        {showReportModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--space-void)]/80 backdrop-blur-md">
+            <motion.div 
+               initial={{ opacity: 0, scale: 0.9 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0, scale: 0.9 }}
+               className="glass-card w-full max-w-sm p-6 relative"
+             >
+              <button onClick={() => setShowReportModal(false)} className="absolute top-4 right-4 text-[var(--on-surface-variant)] hover:text-white transition-colors">
+                <X className="w-5 h-5"/>
+              </button>
+              <h3 className="text-xl font-bold text-[var(--error)] mb-4">Flag Violation</h3>
+              <form onSubmit={submitReport} className="space-y-4">
+                <div>
+                  <label className="label-tech block mb-1">Violation Type</label>
+                  <select 
+                    className="input-glass w-full" 
+                    value={reportReason} 
+                    onChange={(e) => setReportReason(e.target.value)}
+                  >
+                    <option value="Spam" className="bg-[var(--surface-container-highest)]">Spam / Promotion</option>
+                    <option value="Harassment" className="bg-[var(--surface-container-highest)]">Harassment / Bullying</option>
+                    <option value="Hate Speech" className="bg-[var(--surface-container-highest)]">Hate Speech</option>
+                    <option value="Explicit Content" className="bg-[var(--surface-container-highest)]">Explicit Content</option>
+                    <option value="Other" className="bg-[var(--surface-container-highest)]">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="label-tech block mb-1">Details (Optional)</label>
+                  <textarea 
+                    className="input-glass w-full"
+                    rows={3}
+                    value={reportDetails}
+                    onChange={(e) => setReportDetails(e.target.value)}
+                    placeholder="Provide incident log..."
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={reporting}
+                  className="w-full py-2.5 font-bold rounded-lg border border-[var(--error)] text-[var(--error)] hover:bg-[var(--error)] hover:text-white transition-all disabled:opacity-50"
+                >
+                  {reporting ? 'Uploading Logs...' : 'Submit Report'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
