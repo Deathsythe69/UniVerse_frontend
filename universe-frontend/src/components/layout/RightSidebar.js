@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Search, MessageCircle, UserPlus, X, Hash } from 'lucide-react';
+import { Search, MessageCircle, UserPlus, X, Hash, Building2, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosConfig';
 import { AuthContext } from '../../context/AuthContext';
@@ -89,16 +89,26 @@ const RightSidebar = () => {
               <div>
                 <h4 className="label-tech mb-3">Astronauts</h4>
                 <div className="space-y-2">
-                  {searchResults.users.map(u => (
-                    <div key={u._id} className="flex items-center gap-3 p-3 surface-highest rounded-xl ghost-border hover:border-[var(--primary)] transition-all group">
-                      <div className="w-10 h-10 rounded-full border border-[var(--secondary)] flex items-center justify-center text-[var(--on-surface)] text-xs font-bold overflow-hidden flex-shrink-0 bg-[var(--surface-container-low)]">
+                  {searchResults.users.map(u => {
+                    const badgeClass = u.role === 'admin' ? 'role-badge-admin' : u.role === 'moderator' ? 'role-badge-moderator' : 'role-badge-student';
+                    return (
+                    <div key={u._id} className="flex items-start gap-3 p-3 surface-highest rounded-xl ghost-border hover:border-[var(--primary)] transition-all group">
+                      <div className="w-10 h-10 rounded-full border border-[var(--secondary)] flex items-center justify-center text-[var(--on-surface)] text-xs font-bold overflow-hidden flex-shrink-0 bg-[var(--surface-container-low)] mt-0.5">
                         {u.avatar ? <img src={`${BASE_URL}${u.avatar}`} alt="av" className="w-full h-full object-cover" /> : u.name.charAt(0)}
                       </div>
-                      <div className="overflow-hidden flex-1">
-                        <p className="text-sm font-bold text-[var(--on-surface)] truncate">{u.name}</p>
-                        <p className="text-xs text-[var(--primary)] capitalize">{u.role}</p>
+                      <div className="overflow-hidden flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-bold text-[var(--on-surface)] truncate">{u.name}</p>
+                          <span className={`role-badge ${badgeClass}`}>{u.role}</span>
+                        </div>
+                        {(u.department || u.year) && (
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            {u.department && <span className="flex items-center gap-1 text-[10px] text-[var(--on-surface-variant)]"><Building2 className="w-3 h-3"/>{u.department}</span>}
+                            {u.year && <span className="flex items-center gap-1 text-[10px] text-[var(--tertiary)]"><GraduationCap className="w-3 h-3"/>{u.year}</span>}
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                         <button onClick={async () => {
                            await api.post('/messages/conversation', { receiverId: u._id });
                            navigate('/messages');
@@ -113,7 +123,8 @@ const RightSidebar = () => {
                         </button>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -1,6 +1,7 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { motion } from 'framer-motion';
 import {
   Home,
@@ -10,7 +11,9 @@ import {
   MessageSquare,
   Calendar,
   Rocket,
-  LayoutDashboard
+  LayoutDashboard,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 const NAV_SECTIONS = [
@@ -32,6 +35,7 @@ const NAV_SECTIONS = [
 
 const Sidebar = () => {
   const { user, logout } = useContext(AuthContext);
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
   const [mouseY, setMouseY] = useState(0);
@@ -280,12 +284,47 @@ const Sidebar = () => {
         )}
       </nav>
 
-      {/* User Profile & Logout — Bottom */}
+      {/* Theme Toggle + User Profile & Logout — Bottom */}
       <div className="p-5 mt-auto mx-3 mb-3 rounded-2xl space-y-3"
            style={{
              background: 'rgba(25,25,31,0.6)',
              border: '1px solid rgba(72,71,77,0.12)',
            }}>
+
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-300 group"
+          style={{
+            border: '1px solid rgba(72,71,77,0.15)',
+            background: 'transparent',
+          }}
+        >
+          <span className="text-[10px] font-bold tracking-[0.15em] uppercase"
+                style={{ color: 'var(--on-surface-variant)' }}>
+            {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+          </span>
+          <div className="relative w-12 h-6 rounded-full transition-all duration-300"
+               style={{
+                 background: theme === 'dark' ? 'rgba(61,194,253,0.15)' : 'rgba(255,180,0,0.2)',
+                 border: `1px solid ${theme === 'dark' ? 'rgba(61,194,253,0.25)' : 'rgba(255,180,0,0.3)'}`,
+               }}>
+            <motion.div
+              className="absolute top-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+              animate={{ left: theme === 'dark' ? '2px' : '22px' }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              style={{
+                background: theme === 'dark' ? 'var(--primary)' : '#FFB800',
+                boxShadow: theme === 'dark' ? '0 0 8px rgba(61,194,253,0.5)' : '0 0 8px rgba(255,180,0,0.5)',
+              }}
+            >
+              {theme === 'dark' ? <Moon className="w-3 h-3 text-[var(--on-primary)]" /> : <Sun className="w-3 h-3 text-white" />}
+            </motion.div>
+          </div>
+        </button>
+
+        <div className="w-full h-px" style={{ background: 'rgba(72,71,77,0.12)' }} />
+
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
                style={{

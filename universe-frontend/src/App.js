@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { ProtectedRoute, ModeratorRoute, AdminRoute } from './components/layout/ProtectedRoutes';
 import UniverseBackground from './components/shared/UniverseBackground';
 import CosmicCursor from './components/shared/CosmicCursor';
@@ -18,6 +19,7 @@ import UserProfile from './pages/UserProfile';
 
 function App() {
   return (
+    <ThemeProvider>
     <AuthProvider>
       {/* WebGL cosmic background — renders on ALL pages */}
       <UniverseBackground />
@@ -99,6 +101,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

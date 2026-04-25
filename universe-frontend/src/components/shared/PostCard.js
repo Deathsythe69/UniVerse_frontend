@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Flag, Send, Share2, X, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Flag, Send, Share2, X, Trash2, MoreVertical } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import api from '../../api/axiosConfig';
@@ -19,6 +19,9 @@ const PostCard = ({ post, currentUserId, onLikeUpdate, onDelete }) => {
   // Share to DM Modal states
   const [showShareModal, setShowShareModal] = useState(false);
   const [conversations, setConversations] = useState([]);
+
+  // Post Menu state
+  const [showMenu, setShowMenu] = useState(false);
 
   const hasLiked = localPost.likes.includes(currentUserId);
   const totalLikes = localPost.likes.length;
@@ -152,24 +155,44 @@ const PostCard = ({ post, currentUserId, onLikeUpdate, onDelete }) => {
             <p className="text-[11px] text-[var(--on-surface-variant)] uppercase tracking-wider font-semibold">{moment(localPost.createdAt).fromNow()}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-          {localPost.user?._id === currentUserId && (
-            <button 
-              onClick={handleDelete}
-              className="p-2 rounded-full text-[var(--on-surface-variant)] hover:bg-[var(--error-container)]/20 hover:text-[var(--error)] transition-colors" 
-              title="Delete Transmission"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
+        <div className="relative opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
           <button 
-            onClick={handleReport}
-            disabled={reporting}
-            className="p-2 rounded-full text-[var(--on-surface-variant)] hover:bg-[var(--tertiary)]/10 hover:text-[var(--tertiary)] transition-colors" 
-            title="Flag Signal"
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 rounded-full text-[var(--on-surface-variant)] hover:bg-[var(--surface-container-high)] transition-colors"
           >
-            <Flag className="w-4 h-4" />
+            <MoreVertical className="w-5 h-5" />
           </button>
+          
+          <AnimatePresence>
+            {showMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)}></div>
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  className="absolute right-0 top-full mt-2 w-48 glass-card border border-[var(--outline-variant)] shadow-xl z-50 py-2 rounded-xl"
+                >
+                  {localPost.user?._id === currentUserId && (
+                    <button 
+                      onClick={() => { setShowMenu(false); handleDelete(); }}
+                      className="w-full text-left px-4 py-2 text-sm text-[var(--error)] hover:bg-[var(--error-container)]/20 transition-colors flex items-center gap-3"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete Post
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => { setShowMenu(false); handleReport(); }}
+                    className="w-full text-left px-4 py-2 text-sm text-[var(--on-surface)] hover:bg-[var(--surface-container-highest)] transition-colors flex items-center gap-3"
+                  >
+                    <Flag className="w-4 h-4 text-[var(--tertiary)]" />
+                    Report Post
+                  </button>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

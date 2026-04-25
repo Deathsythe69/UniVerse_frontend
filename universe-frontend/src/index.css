@@ -63,6 +63,89 @@
     --gradient-spectral: linear-gradient(135deg, var(--primary), var(--secondary));
   }
 
+  /* === Light Mode — Daylight Canvas === */
+  [data-theme="light"] {
+    --space-void: #f4f2f7;
+    --surface: #ffffff;
+    --surface-dim: #f0eef3;
+    --surface-container-lowest: #ffffff;
+    --surface-container-low: #f8f6fb;
+    --surface-container: #f0eef4;
+    --surface-container-high: #e8e6ec;
+    --surface-container-highest: #e0dee5;
+    --surface-variant: #e5e3ea;
+    --surface-bright: #d8d6dd;
+
+    --primary: #0077b6;
+    --primary-container: #d0eaff;
+    --primary-dim: #005f96;
+    --on-primary: #ffffff;
+
+    --secondary: #7b2cbf;
+    --secondary-container: #eddcff;
+    --secondary-dim: #5a189a;
+    --on-secondary: #ffffff;
+
+    --tertiary: #e85d3a;
+    --tertiary-container: #ffe0d6;
+    --tertiary-dim: #c44524;
+    --on-tertiary: #ffffff;
+
+    --error: #d32f2f;
+    --error-container: #ffdad6;
+
+    --on-surface: #1c1b1f;
+    --on-surface-variant: #5e5c64;
+    --on-background: #1c1b1f;
+
+    --outline: #918f96;
+    --outline-variant: #c9c6cf;
+
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 0, 0, 0.08);
+  }
+
+  [data-theme="light"] .glass-card {
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  }
+  [data-theme="light"] .glass-card:hover {
+    box-shadow: 0 8px 32px rgba(0, 119, 182, 0.1);
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+  [data-theme="light"] .input-glass {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: var(--on-surface);
+  }
+  [data-theme="light"] .input-glass:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.15);
+  }
+  [data-theme="light"] .neon-text-cyan {
+    text-shadow: none;
+    color: var(--primary);
+  }
+  [data-theme="light"] .neon-text-pink {
+    text-shadow: none;
+    color: var(--tertiary);
+  }
+  [data-theme="light"] .neon-text-purple {
+    text-shadow: none;
+    color: var(--secondary);
+  }
+  [data-theme="light"] .surface-highest {
+    background: var(--surface-container-highest);
+  }
+  [data-theme="light"] body {
+    background: var(--space-void);
+  }
+  [data-theme="light"] .cosmic-glass {
+    background: rgba(255,255,255,0.8);
+    border-color: rgba(0,0,0,0.06);
+  }
+
   body {
     @apply bg-transparent antialiased min-h-screen;
     font-family: 'Space Grotesk', system-ui, sans-serif;
@@ -321,6 +404,40 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(72,71,77,0.12);
+  }
+
+  /* === Role Badges (Hierarchy Colors) === */
+  .role-badge {
+    @apply px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase;
+  }
+  .role-badge-admin {
+    background: rgba(255, 60, 60, 0.15);
+    color: #ff4444;
+    border: 1px solid rgba(255, 60, 60, 0.25);
+    text-shadow: 0 0 8px rgba(255, 60, 60, 0.3);
+  }
+  .role-badge-moderator {
+    background: rgba(193, 128, 255, 0.15);
+    color: var(--secondary);
+    border: 1px solid rgba(193, 128, 255, 0.25);
+    text-shadow: 0 0 8px rgba(193, 128, 255, 0.3);
+  }
+  .role-badge-student {
+    background: rgba(61, 194, 253, 0.1);
+    color: var(--primary);
+    border: 1px solid rgba(61, 194, 253, 0.2);
+  }
+
+  [data-theme="light"] .role-badge-admin {
+    background: rgba(255, 60, 60, 0.1);
+    text-shadow: none;
+  }
+  [data-theme="light"] .role-badge-moderator {
+    background: rgba(123, 44, 191, 0.1);
+    text-shadow: none;
+  }
+  [data-theme="light"] .role-badge-student {
+    background: rgba(0, 119, 182, 0.08);
   }
 }
 

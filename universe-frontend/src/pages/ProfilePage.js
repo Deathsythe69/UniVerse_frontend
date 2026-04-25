@@ -3,10 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import MainLayout from '../components/layout/MainLayout';
 import { motion } from 'framer-motion';
+import { Github, Linkedin, Twitter } from 'lucide-react';
+
+const DEPARTMENTS = [
+  '', 'Computer Science & Engineering', 'Electrical Engineering', 'Mechanical Engineering',
+  'Civil Engineering', 'Electronics & Communication', 'Information Technology',
+  'Chemical Engineering', 'Biotechnology', 'Applied Sciences', 'Management Studies'
+];
+
+const YEARS = ['', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Alumni', 'Faculty'];
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ name: '', bio: '' });
+  const [formData, setFormData] = useState({
+    name: '', bio: '', department: '', year: '', phone: '',
+    socialLinks: { github: '', linkedin: '', twitter: '' }
+  });
   const [avatarFile, setAvatarFile] = useState(null);
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState('');
   const [loading, setLoading] = useState(true);
@@ -22,12 +34,21 @@ const ProfilePage = () => {
       try {
         const res = await api.get('/auth/profile');
         if (res.data.user) {
+          const u = res.data.user;
           setFormData({
-            name: res.data.user.name || '',
-            bio: res.data.user.bio || ''
+            name: u.name || '',
+            bio: u.bio || '',
+            department: u.department || '',
+            year: u.year || '',
+            phone: u.phone || '',
+            socialLinks: {
+              github: u.socialLinks?.github || '',
+              linkedin: u.socialLinks?.linkedin || '',
+              twitter: u.socialLinks?.twitter || ''
+            }
           });
-          if (res.data.user.avatar) {
-            setCurrentAvatarUrl(res.data.user.avatar.startsWith('http') ? res.data.user.avatar : `${BASE_URL}${res.data.user.avatar}`);
+          if (u.avatar) {
+            setCurrentAvatarUrl(u.avatar.startsWith('http') ? u.avatar : `${BASE_URL}${u.avatar}`);
           }
         }
       } catch (err) {
@@ -39,6 +60,10 @@ const ProfilePage = () => {
   }, []);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleSocialChange = (key, val) => setFormData({
+    ...formData,
+    socialLinks: { ...formData.socialLinks, [key]: val }
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,6 +74,10 @@ const ProfilePage = () => {
       const data = new FormData();
       data.append('name', formData.name);
       data.append('bio', formData.bio);
+      data.append('department', formData.department);
+      data.append('year', formData.year);
+      data.append('phone', formData.phone);
+      data.append('socialLinks', JSON.stringify(formData.socialLinks));
       if (avatarFile) {
         data.append('avatar', avatarFile);
       }
@@ -86,7 +115,7 @@ const ProfilePage = () => {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, type: 'spring' }}
-          className="w-full max-w-lg glass-card p-10 space-y-8 z-10 mt-8 relative overflow-hidden"
+          className="w-full max-w-2xl glass-card p-10 space-y-8 z-10 mt-8 relative overflow-hidden"
         >
           {/* Ambient glow behind profile card */}
           <div className="absolute -top-20 -left-20 w-64 h-64 bg-[var(--primary)] rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
@@ -112,43 +141,93 @@ const ProfilePage = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            <div>
-              <label className="label-tech block mb-1">Display Name</label>
-              <input
-                type="text"
-                name="name"
-                placeholder="Commander..."
-                className="input-glass"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
+            {/* Row 1: Name + Avatar */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="label-tech block mb-1">Display Name</label>
+                <input
+                  type="text" name="name" placeholder="Commander..."
+                  className="input-glass" value={formData.name}
+                  onChange={handleChange} required
+                />
+              </div>
+              <div>
+                <label className="label-tech block mb-1">Visual Identity (Optional)</label>
+                <input type="file" accept="image/*" ref={fileInputRef}
+                  onChange={(e) => setAvatarFile(e.target.files[0])} className="hidden"
+                />
+                <button type="button" onClick={() => fileInputRef.current.click()}
+                  className="w-full py-3.5 text-sm font-bold surface-highest ghost-border hover:border-[var(--primary)] hover:text-[var(--primary)] rounded-xl transition-all shadow-sm"
+                >
+                  {avatarFile ? `Target acquired: ${avatarFile.name}` : 'Upload New Image'}
+                </button>
+              </div>
             </div>
-            <div>
-              <label className="label-tech block mb-1">Visual Identity (Optional)</label>
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                onChange={(e) => setAvatarFile(e.target.files[0])}
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current.click()}
-                className="w-full py-3.5 text-sm font-bold surface-highest ghost-border hover:border-[var(--primary)] hover:text-[var(--primary)] rounded-xl transition-all shadow-sm"
-              >
-                {avatarFile ? `Target acquired: ${avatarFile.name}` : 'Upload New Image'}
-              </button>
+
+            {/* Row 2: Department + Year */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="label-tech block mb-1">Department</label>
+                <select name="department" className="input-glass" value={formData.department} onChange={handleChange}>
+                  {DEPARTMENTS.map(d => <option key={d} value={d}>{d || '-- Select Department --'}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="label-tech block mb-1">Year</label>
+                <select name="year" className="input-glass" value={formData.year} onChange={handleChange}>
+                  {YEARS.map(y => <option key={y} value={y}>{y || '-- Select Year --'}</option>)}
+                </select>
+              </div>
             </div>
+
+            {/* Row 3: Phone */}
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="label-tech block mb-1">Phone</label>
+                <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX"
+                  className="input-glass" value={formData.phone} onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {/* Social Links */}
+            <div>
+              <label className="label-tech block mb-3">Social Coordinates</label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="relative">
+                  <Github className="absolute left-3 top-3.5 w-4 h-4 text-[var(--on-surface-variant)]" />
+                  <input type="text" placeholder="GitHub username"
+                    className="input-glass pl-10 text-sm"
+                    value={formData.socialLinks.github}
+                    onChange={(e) => handleSocialChange('github', e.target.value)}
+                  />
+                </div>
+                <div className="relative">
+                  <Linkedin className="absolute left-3 top-3.5 w-4 h-4 text-[var(--on-surface-variant)]" />
+                  <input type="text" placeholder="LinkedIn profile"
+                    className="input-glass pl-10 text-sm"
+                    value={formData.socialLinks.linkedin}
+                    onChange={(e) => handleSocialChange('linkedin', e.target.value)}
+                  />
+                </div>
+                <div className="relative">
+                  <Twitter className="absolute left-3 top-3.5 w-4 h-4 text-[var(--on-surface-variant)]" />
+                  <input type="text" placeholder="Twitter handle"
+                    className="input-glass pl-10 text-sm"
+                    value={formData.socialLinks.twitter}
+                    onChange={(e) => handleSocialChange('twitter', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Bio */}
             <div>
               <label className="label-tech block mb-1">Bio</label>
               <textarea
-                 name="bio"
-                 placeholder="Tell the universe about your mission..."
+                 name="bio" placeholder="Tell the universe about your mission..."
                  className="input-glass h-28 resize-none"
-                 value={formData.bio}
-                 onChange={handleChange}
+                 value={formData.bio} onChange={handleChange}
               ></textarea>
             </div>
             
